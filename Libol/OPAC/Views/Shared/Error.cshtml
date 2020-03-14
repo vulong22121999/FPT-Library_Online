@@ -1,0 +1,76 @@
+﻿@model System.Web.Mvc.HandleErrorInfo
+
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error</title>
+    <!-- Title -->
+    <!-- Favicon -->
+    <link href="~/AllContent/images/favicon.ico" rel="icon" type="image/x-icon" />
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i,800,800i%7CLato:100,100i,300,300i,400,400i,700,700i,900,900i"
+          rel="stylesheet" />
+    <link href="~/AllContent/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+
+    <!-- Mobile Menu -->
+    <link href="~/AllContent/css/mmenu.css" rel="stylesheet" type="text/css" />
+    <link href="~/AllContent/css/mmenu.positioning.css" rel="stylesheet" type="text/css" />
+
+    <!-- Stylesheet -->
+    <link href="~/AllContent/css/style.css" rel="stylesheet" type="text/css" />
+    <link href="~/AllContent/css/borrow-book-popup.css" rel="stylesheet" type="text/css" />
+</head>
+<body class="layout-v3">
+    <div class="container">
+        <br /><br />
+        <h1 style="color: black; font-family: Arial" class="text-center">404 ERROR</h1>
+        <p class="text-center">
+            <b>Đã có lỗi xảy ra, trang này không hoạt động hoặc đang cập nhật, vui lòng truy cập lại sau!!</b>
+            <br />
+            <a href="@Url.Action("Home", "Home")" style="color: blue"><b>Về trang chủ</b></a>
+        </p>
+        <p class="text-center">
+            <img src="~/AllContent/images/404error_image.jpg" alt="error" />
+        </p>
+    </div>
+
+    <input type="hidden" id="path" value="~/@($"{Model.ControllerName}/{Model.ActionName}")" />
+    <input type="hidden" id="error" value="@Model.Exception.GetType().Name" />
+    <input type="hidden" id="message" value="@Model.Exception.Message" />
+    <input type="hidden" id="track" value="@Model.Exception.StackTrace" />
+
+    <script src="https://code.jquery.com/jquery-3.4.1.js"
+            integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+            crossorigin="anonymous"></script>
+    <script>
+        $(document).ready(function () {
+            var empObj = {
+                Path: document.getElementById("path").value,
+                Error: document.getElementById("error").value,
+                Message: document.getElementById("message").value,
+                Track: document.getElementById("track").value
+            };
+            $.ajax({
+                url: "/ErrorLog/Log",
+                data: JSON.stringify(empObj),
+                type: "POST",
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                success: function (result) {
+
+
+                },
+                error: function (errorMessage) {
+
+                }
+            });
+        });
+    </script>
+</body>
+</html>

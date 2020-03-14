@@ -1,0 +1,102 @@
+﻿@using OPAC.Dao
+@model OPAC.Models.NOTICE_STORE
+
+@{
+    ViewBag.Title = Model.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    h1, h2, h3, h4, h5 {
+        font-family: Arial;
+        font-weight: bold;
+        text-transform: none;
+    }
+    a {
+        color: blue;
+        text-decoration: none;
+    }
+    a:hover {
+        text-decoration: underline;
+        color: blue;
+    }
+    a.original-text {
+        text-decoration: none;
+    }
+    table {
+        margin: 0 auto;
+    }
+</style>
+
+<div class="container">
+    <figure>
+        <img class="pic-header" alt="Home Slide" src="~/AllContent/images/white-background.png" />
+    </figure>
+    <div class="navbar-home">
+        <a href="@Url.Action("Home", "Home")" class="original-text" style="background-color: #D8491F">
+            <i class="fa fa-home"></i> Trang chủ
+        </a>
+        <a href="@Url.Action("ViewIntroductionPage","Introduction")" class="original-text">Giới thiệu</a>
+        <a href="@Url.Action("ViewProductPage","Product")" class="original-text">Sản phẩm</a>
+        <a href="@Url.Action("ViewServicePage", "Service")" class="original-text">Dịch vụ</a>
+        <a href="@Url.Action("ViewLibraryRegulation", "LibraryRegulations")" class="original-text"
+           style="width: 157px">Nội quy thư viện</a>
+        <a href="@Url.Action("PatronAfterLoginPage", "InformationPatron")" class="original-text"
+           style="width: 216px">Thông tin bạn đọc</a>
+        @if (Session["ID"] == null)
+        {
+            <a href="@Url.Action("Login", "Login")" id="login" class="login original-text">
+                <i class="fa fa-sign-in"></i> Đăng nhập
+            </a>
+        }
+        else
+        {
+            <a href="@Url.Action("Logout", "Login")" id="login" class="login original-text">
+                <i class="fa fa-sign-out"></i> Đăng xuất
+            </a>
+        }
+    </div>
+    <br>
+    <div>
+        <h2 style="font-family: Arial; text-transform: none; color: black">@Model.Title</h2>
+        <p>
+            Đăng trong <a href="@Url.Action("NotificationByLibrary","Notification",
+                                    new { libId = Model.LibID, page = 1 })" style="color: blue">
+                <b>@HomeDao.GetLibraryCode(Model.LibID)</b>
+            </a> vào lúc
+            @Model.CreateTime.ToString("HH:mm:ss dd/MM/yyyy")
+        </p>
+        <hr />
+        @Html.Raw(Model.Content)
+        <hr /><br />
+
+        <div style="float: left; width: 555px">
+            <h3><b>Thông báo khác</b></h3><br />
+            @foreach (var item in ViewBag.TopNotification)
+            {
+                string content = HomeDao.GetLibraryCode(item.LibID) + " : " + item.Title;
+                <p style="padding-left: 15px">
+                    <i class="fa fa-angle-double-right" style="font-size: 18px"></i>&nbsp;
+                    @item.CreateTime.ToString("HH:mm:ss dd/MM/yyyy") -
+                    <a href="@Url.Action("DetailNotice","Notification", new { id = item.ID })"
+                       class="news">@content</a>
+                </p>
+            }
+        </div>
+        <div style="float: right; width: 555px">
+            <h3><b>Tin tức khác</b></h3><br />
+            @foreach (var item in ViewBag.TopNews)
+            {
+                string content = HomeDao.GetLibraryCode(item.LibID) + " : " + item.Title;
+                <p style="padding-left: 15px">
+                    <i class="fa fa-angle-double-right" style="font-size: 18px"></i>&nbsp;
+                    @item.CreateTime.ToString("HH:mm:ss dd/MM/yyyy") -
+                    <a href="@Url.Action("DetailNotice","Notification", new { id = item.ID })"
+                       class="news">@content</a>
+                </p>
+            }
+        </div>
+
+    </div>
+</div>
+<br /><br />

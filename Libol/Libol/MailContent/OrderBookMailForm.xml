@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<notification>
+    <subject>Thông báo về yêu cầu mượn sách - Thư viện FPT</subject>
+    <content>
+      <![CDATA[Thư viện ĐH FPT thông báo đến bạn <b>name</b> về hạn yêu cầu mượn sách như sau:<br/><br/>Bạn đã đặt mượn cuốn: <b>book</b><br/><br/>Ngày yêu cầu mượn sách của bạn hết hạn là: <b>timeoutdate</b><br/><br/>
+        Sau ngày trên thư viện sẽ không giữ sách giúp bạn nữa. <br/><br/>
+        Trân trọng!<br/><br/>
+        Thư viện trường đại học FPT.<br/><br/>
+        ---------------------<br/>
+        <i>Đây là mail tự động, xin vui lòng không reply.</i>]]></content>
+</notification>

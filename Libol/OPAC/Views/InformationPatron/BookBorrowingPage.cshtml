@@ -1,0 +1,403 @@
+﻿@model List<OPAC.Models.SP_OPAC_GET_ONHOLDING_Result>
+@using OPAC.Dao
+@using OPAC.Models
+
+@{
+    ViewBag.Title = "Tài liệu đang mượn - Thư viện trường đại học FPT";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{
+    var patron = (SP_OPAC_CHECK_PATRON_CARD_Result)Session["Info"];
+}
+
+<style>
+    a {
+        color: #f05122;
+        text-decoration: none;
+    }
+
+        a:hover {
+            color: black;
+        }
+
+    input[type=text].login-username {
+        width: 250px;
+        height: 40px;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 2px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    input[type=password].login-password {
+        width: 250px;
+        height: 40px;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 2px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    .fix-modal {
+        padding-top: 100px;
+    }
+</style>
+
+<!-- Start body -->
+<div class="container">
+    <figure>
+        <img class="pic-header" alt="Home Slide" src="~/AllContent/images/white-background.png" />
+    </figure>
+    <div class="navbar-home">
+        <a href="@Url.Action("Home", "Home")"><i class="fa fa-home"></i> Trang chủ</a>
+        <a href="@Url.Action("ViewIntroductionPage","Introduction")">Giới thiệu</a>
+        <a href="@Url.Action("ViewProductPage","Product")">Sản phẩm</a>
+        <a href="@Url.Action("ViewServicePage", "Service")">Dịch vụ</a>
+        <a href="@Url.Action("ViewLibraryRegulation", "LibraryRegulations")" style="width: 157px">Nội quy thư viện</a>
+        <a href="@Url.Action("PatronAfterLoginPage", "InformationPatron")" style="width: 216px; background-color: #D8491F">Thông tin bạn đọc</a>
+        @if (Session["ID"] == null)
+        {
+            <a href="@Url.Action("Login", "Login")" id="login" class="login"><i class="fa fa-sign-in"></i> Đăng nhập</a>
+        }
+        else
+        {
+            <a href="@Url.Action("Logout", "Login")" id="login" class="login"><i class="fa fa-sign-out"></i> Đăng xuất</a>
+        }
+    </div>
+    <br>
+    <div class="inline">
+        <table border="1" class="personal" id="list-infor">
+            <tr>
+                <th class="personal">Trình đơn bạn đọc</th>
+            </tr>
+            <tr>
+                <td class="personal">
+                    <a href="@Url.Action("PatronAfterLoginPage", "InformationPatron")" class="book-borrowing">Thông tin bạn đọc</a>
+                </td>
+            </tr>
+            <tr>
+                <td class="personal selecting">Tài liệu đang mượn</td>
+            </tr>
+            <tr>
+                <td class="personal"><a href="@Url.Action("RegisterToBorrowBookPage", "InformationPatron")" class="book-borrowing">Thông tin đặt mượn sách</a></td>
+            </tr>
+            <tr>
+                <td class="personal"><a href="@Url.Action("ViewHistoryPage", "InformationPatron")" class="personal">Lịch sử mượn sách</a></td>
+            </tr>
+        </table>
+    </div>
+    <div class="inline">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+    @if (Session["ID"] == null)
+    {
+        <div>
+            <table border="1" class="personal" id="infor">
+                <tr>
+                    <th class="personal">Thông tin bạn đọc</th>
+                </tr>
+                <tr>
+                    <td class="personal text-center">
+                        <form action="/InformationPatron/BookBorrowingPage" method="post">
+                            <p class="need-to-login">
+                                Bạn đọc cần phải đăng nhập vào hệ thống
+                            </p>
+                            <div class="row">
+                                <input type="text" class="login-username" name="username" placeholder="Mã sinh viên" />
+                            </div>
+                            <div class="row">
+                                <input type="password" class="login-password" name="password" placeholder="Mật khẩu" />
+                            </div>
+                            <br />
+                            @{
+                                if (TempData["LoginFail2"] != null)
+                                {
+                                    <p style="color: red">@TempData["LoginFail2"]</p>
+                                }if (TempData["Error"] != null)
+                                {
+                                    <p style="color: red">@TempData["Error"]</p>
+                                }
+                                if (TempData["ForgetPassword"] != null)
+                                {
+                                    <p style="color: green">@TempData["ForgetPassword"]</p>
+                                }
+                            }
+                            <div class="row">
+                                <button class="btn btn-primary">Đăng nhập</button>
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#forgetPassword">
+                                    Quên mật khẩu
+                                </button>
+                            </div>
+                        </form>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    }
+    else if (!Model.Any())
+    {
+        <div>
+            <table border="1" class="personal" id="infor">
+                <tr>
+                    <th class="personal">Tài liệu đang mượn</th>
+                </tr>
+                <tr>
+                    <td class="personal">
+                        <p style="text-align: center"><b>Bạn không có quyển nào đang mượn trong kỳ!</b></p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div>
+            <table border="1" class="personal" id="infor">
+                <tr>
+                    <th class="personal">Tài liệu đang mượn</th>
+                </tr>
+                @if (TempData["ExtendSuccessMessage"] != null)
+                {
+                    <tr>
+                        <td class="personal text-center" style="padding: 10px">
+                            <b style="color: green">@TempData["ExtendSuccessMessage"]</b>
+                        </td>
+                    </tr>
+                }
+                <tr>
+                    <td class="personal">
+                        <table style="font-size: 13px">
+                            <tr>
+                                <th class="book-borrowing" style="width: 20px; font-size: 13px">STT</th>
+                                <th class="book-borrowing" style="font-size: 13px">Tên sách</th>
+                                <th class="book-borrowing" style="font-size: 13px">ĐKCB</th>
+                                <th class="book-borrowing" style="font-size: 13px">Ngày mượn</th>
+                                <th class="book-borrowing" style="font-size: 13px">Hạn trả</th>
+                                <th class="book-borrowing" style="font-size: 13px">Số ngày quá hạn</th>
+                                <th class="book-borrowing" style="font-size: 13px">Lần gia hạn còn lại</th>
+                                <th class="book-borrowing" style="width: 60px"></th>
+                            </tr>
+                            @{
+                                int count = 0;
+                                foreach (var item in Model)
+                                {
+                                    count++;
+                                    <tr>
+                                        <td class="info-book">@count</td>
+                                        <td class="info-book">
+                                            <a href="@Url.Action("DetailBook", "SearchBook", new {itemID = item.ItemID})"
+                                               class="book-borrowing-truncate" title="@item.Content">
+                                                <b>@item.Content</b>
+                                            </a>
+                                        </td>
+                                        <td class="info-book">@item.CopyNumber</td>
+                                        <td class="info-book">@item.CODate</td>
+                                        <td class="info-book">@item.CIDate</td>
+                                        @if (item.OVERDUEDAYS <= 0)
+                                        {
+                                            <td class="info-book" style="text-align: center">0</td>
+                                        }
+                                        else
+                                        {
+                                            <td class="info-book" style="text-align: center">@item.OVERDUEDAYS</td>
+                                        }
+                                        @{
+                                            string renewBook = "#" + @item.CIRID;
+                                            int renewals = Convert.ToInt32(item.Renewals) - PatronDao.GetRenewCount(item.CIRID);
+                                        }
+                                        <td class="info-book" style="text-align: center">@renewals</td>
+                                        <td>
+                                            <a href="@renewBook" data-toggle="modal" data-dismiss="modal"
+                                               style="color: blue"><b>Gia hạn</b></a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    }
+    <br>
+</div>
+<br>
+<!-- End body -->
+<!-- Change password popup -->
+@if (Session["ID"] != null)
+{
+    foreach (var item in Model)
+    {
+        if (patron.isLocked == 0)
+        {
+            DateTime expirationDate = DateTime.ParseExact(item.CIDate, "dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture);
+            int result = DateTime.Compare(DateTime.Now.Date, expirationDate.Date);
+            if (Convert.ToInt32(item.Renewals) - PatronDao.GetRenewCount(item.CIRID) == 0)
+            {
+                <div id="@item.CIRID" class="modal fade fix-modal" role="dialog">
+                    <div class="modal-content" style="width: 700px; margin: auto">
+                        <div class="modal-header">
+                            <h2 style="font-family: Arial; color: black">Thông báo</h2>
+                            <a href="#" data-dismiss="modal" title="Đóng" class="modal-close">&times;</a>
+                        </div>
+                        <div class="modal-body text-center">
+                            <p>Sách đã hết lượt gia hạn, xin liên hệ thủ thư</p>
+                            <p>
+                                Email:
+                                <b>
+                                    <a href="mailto:thuvien_fu_hoalac@fpt.edu.vn" style="color: blue">
+                                        thuvien_fu_hoalac@fpt.edu.vn
+                                    </a>
+                                </b>
+                            </p>
+                            <br />
+                            <div>
+                                <p style="text-align: center; position: relative; top: 20px">
+                                    <button type="button" class="submit" data-dismiss="modal">Xác nhận</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (result > 0)
+            {
+                <div id="@item.CIRID" class="modal fade fix-modal" role="dialog">
+                    <div class="modal-content" style="width: 700px; margin: auto">
+                        <div class="modal-header">
+                            <h2 style="font-family: Arial; color: black">Thông báo</h2>
+                            <a href="#" data-dismiss="modal" title="Đóng" class="modal-close">&times;</a>
+                        </div>
+                        <div class="modal-body">
+                            <p>Sách đã quá hạn, bạn không thể gia hạn quyển sách này!</p>
+                            <div>
+                                <p style="text-align: center">
+                                    <button type="button" class="btn1 btn-borrow1" data-dismiss="modal">Xác nhận</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (!PatronDao.CheckRenewsBook(item.CIDate))
+            {
+                <div id="@item.CIRID" class="modal fade fix-modal" role="dialog">
+                    <div class="modal-content" style="width: 700px; margin: auto">
+                        <div class="modal-header">
+                            <h2 style="font-family: Arial; color: black">Thông báo</h2>
+                            <a href="#" data-dismiss="modal" title="Đóng" class="modal-close">&times;</a>
+                        </div>
+                        <div class="modal-body">
+                            <p>
+                                Chưa đến thời điểm được gia hạn. Ngày gia hạn phải trước ngày đến hạn ít nhất 3 ngày!
+                            </p>
+                            <div>
+                                <p style="text-align: center; position: relative; top: 15px">
+                                    <button type="button" class="btn1 btn-borrow1" data-dismiss="modal">Xác nhận</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (PatronDao.IsTextBook(item.ID, PatronDao.GetRenewCount(item.CIRID)))
+            {
+                <div id="@item.CIRID" class="modal fade fix-modal" role="dialog">
+                    <div class="modal-content" style="width: 900px; margin: auto">
+                        <div class="modal-header">
+                            <h2 class="modal-title" style="font-family: Arial; color: black">Xác nhận gia hạn sách</h2>
+                            <a href="#" data-dismiss="modal" title="Đóng" class="modal-close">&times;</a>
+                        </div>
+                        <div class="modal-body">
+                            <form action="/InformationPatron/ExtendDate" method="post">
+                                @{
+                                    var extendDate = DateTime.ParseExact(@item.CIDate, "dd/MM/yyyy",
+                                        System.Globalization.CultureInfo.InvariantCulture);
+                                    int renewalPeriod = PatronDao.GetRenewalPeriod(Convert.ToInt32(item.ItemID), item.CopyNumber);
+                                    string extendDateToString = extendDate.AddDays(renewalPeriod).ToString("dd/MM/yyyy");
+                                    <p>
+                                        Giáo trình <b>@item.Content</b> có thể gia hạn đến ngày <b>@extendDateToString</b>,
+                                        xác nhận gia hạn sách?
+                                    </p>
+                                    int renew = PatronDao.GetRenewCount(item.CIRID) + 1;
+                                    <input type="hidden" name="newDate" value="@extendDateToString" />
+                                    <input type="hidden" name="countRenew" value="@renew" />
+                                    <input type="hidden" name="ID" value="@item.CIRID" />
+                                }
+                                <p style="text-align: center">
+                                    <button class="btn1 btn-borrow1">Đồng ý</button>
+                                    <button type="button" class="btn1 btn-borrow1" data-dismiss="modal">Hủy bỏ</button>
+                                </p>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div id="@item.CIRID" class="modal fade fix-modal" role="dialog">
+                <div class="modal-content" style="width: 700px; margin: auto">
+                    <div class="modal-header">
+                        <h2 style="font-family: Arial; color: black">Thông báo</h2>
+                        <a href="#" data-dismiss="modal" title="Đóng" class="modal-close">&times;</a>
+                    </div>
+                    <div class="modal-body">
+                        <p>Thẻ của bạn đã bị khóa, bạn không thể gia hạn được sách!</p>
+                        <div>
+                            <p style="text-align: center">
+                                <button type="button" class="btn1 btn-borrow1" data-dismiss="modal">Xác nhận</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+}
+
+<div class="modal fade" id="forgetPassword" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <form action="/InformationPatron/ForgetPassword" method="post">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" style="font-family: Arial">Quên mật khẩu</h3>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        Nhập số thẻ và email của bạn dưới đây, hệ thống sẽ tự động gửi mật khẩu mới đến mail của bạn.<br/>
+                        Ví dụ dịnh dạng email: <b>anhNTSE01234@fpt.edu.vn</b>
+                    </p>
+                    <table style="margin: auto">
+                        <tr>
+                            <td style="padding: 10px"><b>Mã sinh viên:&nbsp;&nbsp;&nbsp;</b></td>
+                            <td>
+                                <input class="login-username" type="text" name="studentCode" size="40" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px"><b>Email:&nbsp;&nbsp;&nbsp;</b></td>
+                            <td>
+                                <input class="login-username" type="text" name="email" size="40" />
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <input type="hidden" name="page" value="2"/>
+                <br />
+                <p class="text-center">
+                    <button class="btn btn-primary">Xác nhận</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Đóng</button>
+                </p>
+                <br />
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="~/AllContent/js/bootstrap.min.js"></script>
+<script src="~/AllContent/js/jquery-1.12.4.min.js"></script>

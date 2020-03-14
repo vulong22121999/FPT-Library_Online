@@ -1,0 +1,263 @@
+﻿    @using PagedList.Mvc
+@model PagedList.IPagedList<OPAC.Models.SupportClass.Notification>
+
+@{
+    ViewBag.Title = "Quản lý bài viết - FPT Library";
+    Layout = "~/Views/Shared/_NoticeLayout.cshtml";
+}
+
+<link rel="stylesheet" type="text/css" href="~/Content/DataTables/DataTables-1.10.18/css/dataTables.bootstrap4.css">
+<link rel="stylesheet" type="text/css" href="~/Content/DataTables/Select-1.3.0/css/select.bootstrap4.css">
+
+<div class="container">
+    <div id="contentAll">
+        <div class="row">
+            <div class="col-sm-3">
+                <h2>Quản lý bài viết</h2>
+            </div>
+            <div class="col-sm-3">
+            </div>
+            <div class="col-sm-2 text-right" style="position: relative; top: 20px; right: 5px">
+                <button class="btn btn-primary" onclick="location.href='@Url.Action("InsertHomeImage","Notification")'">
+                    Thêm ảnh trang chủ OPAC
+                </button>
+            </div>
+            <div class="col-sm-2 text-right" style="position: relative; top: 20px">
+                <button class="btn btn-primary" onclick="window.open('@Url.Action("FullNotification","Notification",
+                                                                            new {page = 1})')">
+                    Xem danh sách thông báo
+                </button>
+            </div>
+            <div class="col-sm-2 text-right" style="position: relative; top: 20px">
+                <button class="btn btn-primary" onclick="window.open('@Url.Action("FullNews","Notification",
+                                                                          new {page = 1})')">
+                    Xem danh sách tin tức
+                </button>
+            </div>
+        </div>
+        <br />
+        <div class="row">
+            @using (Html.BeginForm("SearchNotification", "Notification", FormMethod.Post,
+                new { enctype = "multipart/form-data" }))
+            {
+                <div class="col-sm-3">
+                    <label>Tìm kiếm bài viết: </label>
+                    <input type="text" class="form-control" name="searchByTitle" placeholder="Tên tiêu đề..." />
+                </div>
+                <div class="col-sm-2">
+                    <label>Tìm theo mục: </label>
+                    <select class="form-control" name="searchByType">
+                        <option value="0">--- Chọn mục ---</option>
+                        @foreach (var item in ViewBag.TypeNoticeList)
+                        {
+                            <option value="@item.ID">@item.TypeNotice</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-sm-2">
+                    <label>Tìm theo thư viện: </label>
+                    <select class="form-control" name="searchByLibrary">
+                        <option value="0">-- Chọn thư viện --</option>
+                        @foreach (var item in ViewBag.LibraryList)
+                        {
+                            <option value="@item.ID">@item.Code</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-sm-2">
+                    <label>Từ ngày:</label>
+                    <input type="date" class="form-control" name="startDate" />
+                </div>
+                <div class="col-sm-2">
+                    <label>Đến ngày:</label>
+                    <input type="date" class="form-control" name="endDate" />
+                </div>
+                <div class="col-sm-1 text-right" style="position: relative; top: 25px">
+                    <button type="submit" class="btn btn-primary">Tìm</button>
+                </div>
+            }
+        </div>
+        <br /><br />
+        <div class="row">
+            @if (Model.TotalItemCount == 0)
+            {
+                <div class="col-sm-2 text-left">
+                    <p>Không có dữ liệu</p>
+                </div>
+                <div class="col-sm-8 text-right" style="position: relative; bottom: 7px; left: 58px">
+                    <button type="button" class="btn btn-primary"  onclick="location.href = '@Url.Action("ReturnNotificationHome")'">
+                        Hiển thị tất cả bài viết
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="col-sm-6 text-left">
+                    <p>
+                        Hiển thị @ViewBag.FirstIndex đến @ViewBag.LastIndex trong tổng số @ViewBag.Total kết quả
+                    </p>
+                </div>
+                <div class="col-sm-4 text-right" style="position: relative; bottom: 7px; left: 60px">
+                    <button type="button" class="btn btn-primary" onclick="location.href = '@Url.Action("ReturnNotificationHome")'">
+                        Hiển thị tất cả bài viết
+                    </button>
+                </div>
+            }
+            <div class="col-sm-2 text-right" style="position: relative; bottom: 7px; left: 40px; width: 100px">
+                <button type="submit" class="btn btn-primary"
+                        onclick="location.href = '@Url.Action("CreateNotification", "Notification")'">
+                    Tạo bài viết mới
+                </button>
+            </div>
+        </div>
+        @if (TempData["UpdateSuccessfulMessage"] != null)
+        {
+            <div>
+                <p style="font-weight: bold; color: green; text-align: center">@TempData["UpdateSuccessfulMessage"].ToString()</p>
+            </div>
+        }
+        @if (TempData["SuccessfulMessage"] != null)
+        {
+            <p style="text-align: center; font-weight: bold; color: green">@TempData["SuccessfulMessage"].ToString()</p>
+        }
+        <table id="general_tbl" class="table table-striped table-bordered display" border="1">
+            <thead>
+                <tr>
+                    <th style="text-align: center; vertical-align: top">STT</th>
+                    <th style="text-align: center; vertical-align: top">Tiêu đề</th>
+                    <th style="text-align: center; vertical-align: top">Mục</th>
+                    <th style="text-align: center; vertical-align: top">Ngày tạo</th>
+                    <th style="text-align: center; vertical-align: top">Thư viện</th>
+                    <th style="text-align: center; vertical-align: top">
+                        Sửa bài viêt
+                    </th>
+                    <th style="text-align: center; vertical-align: top">
+                        <div>Xóa</div><input type="checkbox" id="checkAllDelete" onclick="checkAllDel()">
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.TotalItemCount == 0)
+                {
+                    <tr>
+                        <td colspan="7" style="text-align: center">
+                            Không tìm thấy kết quả phù hợp!
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var i in Model)
+                    {
+                        <tr>
+                            <td class="text-center">@i.Count</td>
+                            <td>
+                                <a href="@Url.Action("DetailNotice", "Notification", new {id = i.ID})"
+                                   target="_blank">@i.Title</a>
+                            </td>
+                            <td class="text-center">@i.TypeName</td>
+                            <td class="text-center">@i.CreateTime</td>
+                            <td class="text-center">@i.LibraryName</td>
+                            <td class="text-center">
+                                <button type="submit" class="btn btn-success"
+                                        onclick="location.href = '@Url.Action("EditNotification", "Notification",
+                                                                  new {noticeId = i.ID})'">
+                                    Sửa
+                                </button>
+                            </td>
+                            <td class="text-center">
+                                <input type="checkbox" id="ck(@i.Count)" name="checkToDelete" value="@i.ID" />
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+    <div id="aaa">
+
+    </div>
+    <div class="row">
+        <div class="col-sm-6" style="position: relative; bottom: 22px">
+            @Html.PagedListPager(Model, page => Url.Action("NotificationHome", "Notification", new { page }))
+        </div>
+        @if (Model.Count != 0)
+        {
+            <div class="col-sm-6" style="text-align: right">
+                <button type="button" class="btn btn btn-danger" onclick="deleteNotice()">
+                    Xóa
+                </button>
+            </div>
+        }
+    </div>
+</div>
+<script>
+    function checkAllDel() {
+        var checkbox = document.getElementsByName('checkToDelete');
+        var checkAl = document.getElementById('checkAllDelete');
+        var isAllCheck = false;
+        var i;
+        if (checkAl.checked === true) {
+            for (i = 0; i < checkbox.length; i++) {
+                checkbox[i].checked = true;
+            }
+        } else {
+            for (i = 0; i < checkbox.length; i++) {
+                checkbox[i].checked = false;
+            }
+        }
+
+        for (i = 0; i < checkbox.length; i++) {
+            if (checkbox[i].checked === true) {
+                isAllCheck = true;
+            } else {
+                isAllCheck = false;
+            }
+        }
+
+        if (isAllCheck === true) {
+            checkAl.checked = true;
+        }
+
+    }
+
+    function deleteNotice() {
+
+        var checkbox = document.getElementsByName('checkToDelete');
+        var strOrderID = "";
+
+
+        for (var i = 0; i < checkbox.length; i++) {
+            if (checkbox[i].checked === true) {
+                strOrderID += checkbox[i].value + ' ';
+            }
+        }
+
+        if (strOrderID === "") {
+            alert("Vui lòng chọn bài viết muốn xóa");
+            return;
+        }
+
+        if (confirm("Xác nhận xóa những mục đã chọn?")) {
+            $.ajax({
+                url: "/Notification/DeleteNotification",
+                data: JSON.stringify({ strOrderID: strOrderID }),
+                type: "POST",
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                success: function () {
+                    alert('Xóa thành công!');
+                    location.href = '@Url.Action("NotificationHome", "Notification", new { page = 1 })';
+                },
+                error: function () {
+                    alert('Xóa thất bại!');
+                }
+            });
+        }
+    }
+</script>
+<script src="~/AllContent/js/bootstrap.min.js"></script>
+<script src="~/AllContent/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" charset="utf8" src="~/Content/DataTables/DataTables-1.10.18/js/jquery.dataTables.js"></script>
+<script type="text/javascript" charset="utf8" src="~/Content/DataTables/DataTables-1.10.18/js/dataTables.bootstrap4.js"></script>
+<script type="text/javascript" charset="utf8" src="~/Content/DataTables/Select-1.3.0/js/dataTables.select.js"></script>

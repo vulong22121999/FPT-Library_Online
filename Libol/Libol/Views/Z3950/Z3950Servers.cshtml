@@ -1,0 +1,491 @@
+﻿
+@{
+    ViewBag.Title = "Z3950Servers";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    div.form-inline label.col-md-5 {
+        justify-content: flex-end;
+    }
+
+    div.form-inline label.col-md-7 {
+        justify-content: right;
+    }
+
+    .form-control {
+        margin-left: 2px;
+    }
+
+    .form-row {
+        margin-top: 10px;
+    }
+
+    .confirm-notify {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        padding-top: 200px; /* Location of the box */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    }
+
+    .confirm-notify-content {
+        position: relative;
+        background-color: #fefefe;
+        margin: auto;
+        padding: 0;
+        border: 1px solid #888;
+        width: 20%;
+        box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+        -webkit-animation-name: animatetop;
+        -webkit-animation-duration: 0.4s;
+        animation-name: animatetop;
+        animation-duration: 0.4s
+    }
+    /* The Modal (background) */
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        padding-top: 70px; /* Location of the box */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    }
+
+    /* Modal Content */
+    .modal-content {
+        position: relative;
+        background-color: #fefefe;
+        margin: auto;
+        padding: 0;
+        border: 1px solid #888;
+        width: 40%;
+        box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+        -webkit-animation-name: animatetop;
+        -webkit-animation-duration: 0.4s;
+        animation-name: animatetop;
+        animation-duration: 0.4s
+    }
+
+    /* Add Animation */
+    @@-webkit-keyframes animatetop {
+        from {
+            opacity: 0
+        }
+
+        to {
+            opacity: 1
+        }
+    }
+
+    @@keyframes animatetop {
+        from {
+            opacity: 0
+        }
+
+        to {
+            opacity: 1
+        }
+    }
+
+    /* The Close Button */
+    .close {
+        color: white;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+    .modal-header {
+        padding: 15px 20px;
+        display: block;
+    }
+
+    .modal-body {
+        padding: 15px 20px;
+    }
+
+    .modal-footer {
+        padding: 15px 20px;
+        display: block;
+    }
+</style>
+
+<div style="padding: 15px;">
+    <h2>Quản lý cổng Z39.50</h2>
+</div>
+
+<center>
+    <div class="col-10 justify-content-center">
+        <table id="#table_serverlist" class="table table-striped table-bordered datatables" style="font-size: 13px">
+            <thead class="bg-info">
+                <tr>
+                    <th>Tên thư viện</th>
+                    <th>Server</th>
+                    <th>Port</th>
+                    <th>Tài khoản</th>
+                    <th>Mật khẩu</th>
+                    <th>CSDL</th>
+                    <th>Mô tả</th>
+                    <th>Sửa</th>
+                    <th>Xóa</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in ViewBag.listZ3950Server)
+                {
+                    <tr>
+                        <td>@item.Name</td>
+                        <td>@item.Host</td>
+                        <td>@item.Port</td>
+                        <td>@item.Account</td>
+                        <td>@item.Password</td>
+                        <td>@item.DBName</td>
+                        <td>@item.Description</td>
+                        <td><button class="btn btn-info" style="font-size: 13px" onclick="ShowEdit(@item.ID)">Sửa</button></td>
+                        <td><button class="btn btn-danger" style="font-size: 13px" onclick="ConfirmDelete(@item.ID)">Xóa</button></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</center>
+<div class="container">
+    <div class="row">
+        <div class="col text-center">
+            <form action="/Z3950/SearchZ3950" method="post">
+                <button type="submit" style="float:left" class="btn btn-primary">&lt;&lt;Quay lại</button>
+            </form>
+            <button type="submit" class="btn btn-success" onclick="ShowAddServer()">Thêm </button>
+        </div>
+    </div>
+</div>
+<div id="AddServerPopup" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+        <div class="modal-header">
+            <span onclick="CloseAddForm()" class="close">&times;</span>
+            <h4 style="text-align: center">Thêm cơ sở dữ liệu</h4>
+        </div>
+        <div class="modal-body">
+
+            <table style="width: 100%">
+                <tr>
+                    <td style="width: 15%;text-align: right"><label for="txtVolume2">Tên thư viện:</label></td>
+                    <td style=""><input type="text" class="form-control" id="txtName"></td>
+                </tr>
+                <tr>
+                    <td style="width: 15%;text-align: right"><label for="txtCallNumber2">Server:</label></td>
+                    <td style=""><input type="text" class="form-control" id="txtHost"></td>
+                </tr>
+                <tr>
+                    <td style="width: 15%;text-align: right"><label for="txtShelf2">Port:</label></td>
+                    <td style=""><input type="text" class="form-control" id="txtPort"></td>
+                </tr>
+                <tr>
+                    <td style="width: 15%;text-align: right"><label for="txtAcquiredDate2">CSDL:</label></td>
+                    <td style=""><input type="text" class="form-control" id="txtDBName"></td>
+                </tr>
+                <tr>
+                    <td style="width: 15%;text-align: right"><label for="txtReceiptedDate2">Tài khoản:</label></td>
+                    <td style=""><input type="text" class="form-control" id="txtAccount"></td>
+                </tr>
+                <tr>
+                    <td style="width: 15%;text-align: right"><label for="txtRecordNumber2">Mật khẩu:</label></td>
+                    <td style=""><input type="text" class="form-control" id="txtPassword"></td>
+                </tr>
+                <tr>
+                    <td style="width: 15%;text-align: right"><label for="txtNote2">Mô tả: </label></td>
+                    <td style=""><input type="text" class="form-control" id="txtDescription"></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="modal-footer" style="text-align: center">
+            <button class="btn btn-success " style="float: right;margin-left:15px; " onclick="AddServer()">Thêm</button>
+            <button class="btn btn-warning" style="float: right; margin-left:15px;" onclick="TestConnectionAdd()">Thử</button>
+            <button class="btn btn-danger" style="float: right" onclick="CloseAddForm()">Hủy bỏ</button>
+        </div>
+    </div>
+
+</div>
+
+<div id="ShowConfirm" class="confirm-notify">
+    <div class="confirm-notify-content">
+        <div class="modal-header">
+            <h4 style="text-align: center">Xóa bản ghi?</h4>
+            <input type="hidden" id="IDDelete" />
+        </div>
+        <div class="modal-footer" style="text-align: center">
+            <button class="btn btn-success " style="margin-left:15px; " onclick="CloseConfirm()">Không</button>
+            <button class="btn btn-danger" style="" onclick="DeleteServer()">Xóa</button>
+        </div>
+    </div>
+</div>
+
+<div id="EditServerPopup" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+        <div class="modal-header">
+            <span onclick="CloseEditForm()" class="close">&times;</span>
+            <h4 style="text-align: center">Sửa cơ sở dữ liệu</h4>
+        </div>
+        <div class="modal-body">
+
+            <table style="width: 100%">
+                <tr>
+
+                    <td style="width: 15%;text-align: right"><label for="txtVolume2">Tên thư viện:</label></td>
+                    <td style="">
+                        <input type="text" class="form-control" id="txtNameEdit">
+                        <input type="hidden" id="txtIDEdit" />
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 15%;text-align: right"><label for="txtCallNumber2">Server:</label></td>
+                    <td style=""><input type="text" class="form-control" id="txtHostEdit"></td>
+                </tr>
+                <tr>
+                    <td style="width: 15%;text-align: right"><label for="txtShelf2">Port:</label></td>
+                    <td style=""><input type="text" class="form-control" id="txtPortEdit"></td>
+                </tr>
+                <tr>
+                    <td style="width: 15%;text-align: right"><label for="txtAcquiredDate2">CSDL:</label></td>
+                    <td style=""><input type="text" class="form-control" id="txtDBNameEdit"></td>
+                </tr>
+                <tr>
+                    <td style="width: 15%;text-align: right"><label for="txtReceiptedDate2">Tài khoản:</label></td>
+                    <td style=""><input type="text" class="form-control" id="txtAccountEdit"></td>
+                </tr>
+                <tr>
+                    <td style="width: 15%;text-align: right"><label for="txtRecordNumber2">Mật khẩu:</label></td>
+                    <td style=""><input type="text" class="form-control" id="txtPasswordEdit"></td>
+                </tr>
+                <tr>
+                    <td style="width: 15%;text-align: right"><label for="txtNote2">Mô tả: </label></td>
+                    <td style=""><input type="text" class="form-control" id="txtDescriptionEdit"></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="modal-footer" style="text-align: center">
+            <button class="btn btn-success " style="float: right;margin-left:15px; " onclick="EditServer()">Lưu</button>
+            <button class="btn btn-warning" style="float: right; margin-left:15px;" onclick="TestConnectionEdit()">Thử</button>
+            <button class="btn btn-danger" style="float: right" onclick="CloseEditForm()">Hủy bỏ</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function ShowAddServer() {
+        document.getElementById("AddServerPopup").style.display = "block";
+    };
+
+    function ShowEdit(ID) {
+        var data = {
+            strID: ID
+        };
+        $.ajax({
+            url: "/Z3950/GetServerForEdit",
+            type: "POST",
+            data: JSON.stringify(data),
+            contentType: "application/json;charset=utf-8",
+            dataType: "json",
+            success: function (result) {
+                document.getElementById("txtIDEdit").value = result["ID"];
+                document.getElementById("txtNameEdit").value = result["Name"];
+                document.getElementById("txtHostEdit").value = result["Host"];
+                document.getElementById("txtPortEdit").value = result["Port"];
+                document.getElementById("txtAccountEdit").value = result["Account"];
+                document.getElementById("txtPasswordEdit").value = result["Password"];
+                document.getElementById("txtDBNameEdit").value = result["DBName"];
+                document.getElementById("txtDescriptionEdit").value = result["Description"];
+                document.getElementById("EditServerPopup").style.display = "block";
+            },
+            error: function (error) {
+                alert(error);
+            }
+
+        });
+
+    };
+
+    function AddServer() {
+
+        var data = {
+            strName: document.getElementById("txtName").value,
+            strHost: document.getElementById("txtHost").value,
+            strPort: document.getElementById("txtPort").value,
+            strAccount: document.getElementById("txtAccount").value,
+            strPassword: document.getElementById("txtPassword").value,
+            strDBName: document.getElementById("txtDBName").value,
+            strDescription: document.getElementById("txtDescription").value
+        };
+        $.ajax({
+            url: "/Z3950/AddServer",
+            type: "POST",
+            data: JSON.stringify(data),
+            contentType: "application/json;charset=utf-8",
+            dataType: "json",
+            success: function (message) {
+                if (message["Message"] == "Thêm thất bại.") {
+                    alert(message["Message"]);
+                } else if (message["Message"] == "Thêm thành công!") {
+                    alert(message["Message"]);
+                    document.getElementById("AddServerPopup").style.display = "none";
+                    location.reload();
+                }
+
+            },
+            error: function (error) {
+                alert(error);
+            }
+
+        });
+    };
+
+    function EditServer() {
+        var data = {
+            strID: document.getElementById("txtIDEdit").value,
+            strName: document.getElementById("txtNameEdit").value,
+            strHost: document.getElementById("txtHostEdit").value,
+            strPort: document.getElementById("txtPortEdit").value,
+            strAccount: document.getElementById("txtAccountEdit").value,
+            strPassword: document.getElementById("txtPasswordEdit").value,
+            strDBName: document.getElementById("txtDBNameEdit").value,
+            strDescription: document.getElementById("txtDescriptionEdit").value
+        };
+        $.ajax({
+            url: "/Z3950/EditServer",
+            type: "POST",
+            data: JSON.stringify(data),
+            contentType: "application/json;charset=utf-8",
+            dataType: "json",
+            success: function (message) {
+                if (message["Message"] == "Sửa thất bại.") {
+                    alert(message["Message"]);
+                } else if (message["Message"] == "Sửa thành công!") {
+                    alert(message["Message"]);
+                    document.getElementById("EditServerPopup").style.display = "none";
+                    location.reload();
+                }
+            },
+            error: function (error) {
+                alert(error);
+            }
+
+        });
+    }
+
+    function ConfirmDelete(id) {
+        document.getElementById("IDDelete").value = id;
+        document.getElementById("ShowConfirm").style.display = "block";
+    }
+
+    function CloseConfirm() {
+        document.getElementById("ShowConfirm").style.display = "none";
+    }
+    function DeleteServer() {
+        document.getElementById("ShowConfirm").style.display = "none";
+
+        var data = {
+            strID: document.getElementById("IDDelete").value
+        };
+
+        $.ajax({
+            url: "/Z3950/DeleteServer",
+            type: "POST",
+            data: JSON.stringify(data),
+            contentType: "application/json;charset=utf-8",
+            dataType: "json",
+            success: function (message) {
+                alert(message["Message"]);
+                location.reload();
+            },
+            error: function (error) {
+                alert(error);
+            }
+
+        });
+    };
+
+    function TestConnectionAdd() {
+        var data = {
+            strName: document.getElementById("txtName").value,
+            strHost: document.getElementById("txtHost").value,
+            strPort: document.getElementById("txtPort").value,
+            strAccount: document.getElementById("txtAccount").value,
+            strPassword: document.getElementById("txtPassword").value,
+            strDBName: document.getElementById("txtDBName").value,
+        };
+        $.ajax({
+            url: "/Z3950/TestConnection",
+            type: "POST",
+            data: JSON.stringify(data),
+            contentType: "application/json;charset=utf-8",
+            dataType: "json",
+            success: function (message) {
+                alert(message["Message"]);
+
+            },
+            error: function (error) {
+                alert(error);
+            }
+
+        });
+    }
+
+    function TestConnectionEdit() {
+        var data = {
+            strName: document.getElementById("txtNameEdit").value,
+            strHost: document.getElementById("txtHostEdit").value,
+            strPort: document.getElementById("txtPortEdit").value,
+            strAccount: document.getElementById("txtAccountEdit").value,
+            strPassword: document.getElementById("txtPasswordEdit").value,
+            strDBName: document.getElementById("txtDBNameEdit").value,
+        };
+        $.ajax({
+            url: "/Z3950/TestConnection",
+            type: "POST",
+            data: JSON.stringify(data),
+            contentType: "application/json;charset=utf-8",
+            dataType: "json",
+            success: function (message) {
+                alert(message["Message"]);
+
+            },
+            error: function (error) {
+                alert(error);
+            }
+
+        });
+    }
+
+    function CloseAddForm() {
+        document.getElementById("AddServerPopup").style.display = "none";
+    }
+
+    function CloseEditForm() {
+        document.getElementById("EditServerPopup").style.display = "none";
+    }
+</script>

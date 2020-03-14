@@ -1,0 +1,233 @@
+﻿@using OPAC.Models
+@model OPAC.Models.LibraryLocationModel
+
+@{
+    ViewBag.Title = "Tìm kiếm nâng cao - Thư viện trường đại học FPT";
+    Layout = "~/Views/Shared/_LayoutSupport.cshtml";
+}
+
+<style>
+    select.for-advanced-search {
+        height: 35px;
+        border: 2px solid grey;
+        border-radius: 3px;
+    }
+
+    select.for-library {
+        width: 400px;
+    }
+
+    select.for-location {
+        width: 250px;
+    }
+
+    select.for-doc-type {
+        width: 300px;
+    }
+</style>
+
+<!-- Start body -->
+<div class="container">
+    <figure>
+        <img class="pic-header" alt="Home Slide" src="~/AllContent/images/white-background.png" />
+    </figure>
+    <div class="navbar-home">
+        <a href="@Url.Action("Home", "Home")" style="background-color: #D8491F"><i class="fa fa-home"></i> Trang chủ</a>
+        <a href="@Url.Action("ViewIntroductionPage","Introduction")">Giới thiệu</a>
+        <a href="@Url.Action("ViewProductPage","Product")">Sản phẩm</a>
+        <a href="@Url.Action("ViewServicePage", "Service")">Dịch vụ</a>
+        <a href="@Url.Action("ViewLibraryRegulation", "LibraryRegulations")" style="width: 157px">Nội quy thư viện</a>
+        <a href="@Url.Action("PatronAfterLoginPage", "InformationPatron")" style="width: 216px">Thông tin bạn đọc</a>
+        @if (Session["ID"] == null)
+        {
+            <a href="@Url.Action("Login", "Login")" id="login" class="login"><i class="fa fa-sign-in"></i> Đăng nhập</a>
+        }
+        else
+        {
+            <a href="@Url.Action("Logout", "Login")" id="login" class="login"><i class="fa fa-sign-out"></i> Đăng xuất</a>
+        }
+    </div>
+    <br>
+    <h2 class="searching">Tìm kiếm nâng cao</h2>
+    <br>
+    @{
+        var searchTypeList = (List<SelectListItem>)ViewBag.SearchType;
+    }
+    <div class="inline" style="width: 100%; background-color: #e5e5e5">
+        <br />
+        <form action="/SearchBook/GetOptionAdvancedSearch" method="post">
+            <table class="advanced-searching2">
+                <tr>
+                    <td class="advanced-searching"></td>
+                    <td class="advanced-searching fixed-text"><b>Thư viện:</b></td>
+                    <td class="advanced-searching" colspan="2">
+                        <select class="for-advanced-search for-library" id="LibraryId" name="libraryId">
+                            <option value="0">------------------ Chọn thư viện ------------------</option>
+                            @{
+                                var libraryList = (List<SP_GET_LIBRARY_Result>)ViewBag.LibraryList;
+
+                                foreach (var item in libraryList)
+                                {
+                                    <option value="@item.ID">@item.Name</option>
+                                }
+                            }
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="advanced-searching"></td>
+                    <td class="advanced-searching fixed-text"><b>Kho:</b></td>
+                    <td class="advanced-searching" colspan="2">
+                        @Html.DropDownListFor(model => model.LocationId, new SelectList(""),
+                            new { @class = "for-advanced-search for-doc-type" })
+                    </td>
+                </tr>
+                <tr>
+                    <td class="advanced-searching"></td>
+                    <td class="advanced-searching">
+                        <select class="for-advanced-search" name="searchType">
+                            @foreach (var item in searchTypeList)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                    </td>
+                    <td class="advanced-searching" colspan="2">
+                        <input type="text" size="51" class="search-data" name="txtSearch1" placeholder="Từ khóa tìm kiếm...">
+                    </td>
+                </tr>
+                <tr>
+                    <td class="advanced-searching">
+                        <select class="for-advanced-search" name="condition1">
+                            <option value="and">Và</option>
+                            <option value="or">Hoặc</option>
+                            <option value="not">Không</option>
+                        </select>
+                    </td>
+                    <td class="advanced-searching">
+                        <select class="for-advanced-search" name="searchType2">
+                            @foreach (var item in searchTypeList)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                    </td>
+                    <td class="advanced-searching" colspan="2">
+                        <input type="text" size="51" class="search-data" name="txtSearch2" placeholder="Từ khóa tìm kiếm...">
+                    </td>
+                </tr>
+                <tr>
+                    <td class="advanced-searching">
+                        <select class="for-advanced-search" name="condition2">
+                            <option value="and">Và</option>
+                            <option value="or">Hoặc</option>
+                            <option value="not">Không</option>
+                        </select>
+                    </td>
+                    <td class="advanced-searching">
+                        <select class="for-advanced-search" name="searchType3">
+                            @foreach (var item in searchTypeList)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                    </td>
+                    <td class="advanced-searching" colspan="2">
+                        <input type="text" size="51" class="search-data" name="txtSearch3" placeholder="Từ khóa tìm kiếm...">
+                    </td>
+                </tr>
+                <tr>
+                    <td class="advanced-searching">
+                        <select class="for-advanced-search" name="condition3">
+                            <option value="and">Và</option>
+                            <option value="or">Hoặc</option>
+                            <option value="not">Không</option>
+                        </select>
+                    </td>
+                    <td class="advanced-searching">
+                        <select class="for-advanced-search" name="searchType4">
+                            @foreach (var item in searchTypeList)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                    </td>
+                    <td class="advanced-searching" colspan="2">
+                        <input type="text" size="51" class="search-data" name="txtSearch4" placeholder="Từ khóa tìm kiếm...">
+                    </td>
+                </tr>
+                <tr>
+                    <td class="advanced-searching"></td>
+                    <td class="advanced-searching fixed-text"><b>Dạng tài liệu:</b></td>
+                    <td class="advanced-searching" colspan="2">
+                        <select class="for-advanced-search for-doc-type" name="documentType">
+                            @{
+                                var documentList = (List<SP_OPAC_GET_DIC_ITEM_TYPE_Result>) ViewBag.DocumentList;
+                            }
+                            <option value="0" selected>Toàn bộ tài liệu</option>
+                            @foreach (var item in documentList)
+                            {
+                                if (!string.IsNullOrWhiteSpace(item.TypeName))
+                                {
+                                    <option value="@item.ID">@item.TypeName</option>
+                                }
+                            }
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="advanced-searching"></td>
+                    <td class="advanced-searching fixed-text"><b>Sắp xếp theo:</b></td>
+                    <td class="advanced-searching" colspan="2">
+                        <select class="for-advanced-search for-location" name="orderBy">
+                            <option value="1">Nhan đề chính</option>
+                            <option value="2">Tác giả chính</option>
+                            <option value="3">Năm xuất bản</option>
+                            <option value="4">Nhà xuất bản</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="advanced-searching" colspan="4" style="text-align: center">
+                        <div id="errorMessage" style="color: red; font-weight: bold">@TempData["errorMessage"]</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="advanced-searching" colspan="4" style="text-align: center">
+                        <button class="submit">Tìm kiếm</button>
+                        <button class="submit" type="button" onclick="location.reload()">Đặt lại</button>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+    <div class="inline" style="width: 100%; background-color: #e5e5e5"><br></div>
+    <br>
+</div>
+<br><br><br>
+<!-- End body -->
+
+<!-- Load location-->
+<script language="javascript" type="text/javascript" src="~/Scripts/jquery-3.3.1.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#LibraryId").change(function() {
+            $("#LocationId").empty();
+            var libraryId = $("#LibraryId").val();
+            $.ajax({
+                type: 'POST',
+                url: '/SearchBook/GetLocationByLibId?libraryId=' + libraryId,
+                dataType: 'json',
+                data: { id: $("#LibraryId").val() },
+                success: function(locs) {
+                    $.each(locs,
+                        function (i, loc) {
+                            $("#LocationId").append('<option value="' +
+                                loc.Value + '">' + loc.Text + '</option>');
+                        });
+                }
+            });
+            return false;
+        });
+    });
+</script>

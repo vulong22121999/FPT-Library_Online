@@ -1,0 +1,234 @@
+﻿@model List<OPAC.Models.FPT_SP_OPAC_GET_LOAN_HISTORY_Result>
+
+@{
+    ViewBag.Title = "Lịch sử mượn sách - Thư viện trường đại học FPT";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    a {
+        color: #f05122;
+        text-decoration: none;
+    }
+
+        a:hover {
+            color: black;
+        }
+
+    input[type=text].login-username {
+        width: 250px;
+        height: 40px;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 2px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    input[type=password].login-password {
+        width: 250px;
+        height: 40px;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 2px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+</style>
+
+<!-- Start body -->
+<div class="container">
+    <figure>
+        <img class="pic-header" alt="Home Slide" src="~/AllContent/images/white-background.png" />
+    </figure>
+    <div class="navbar-home">
+        <a href="@Url.Action("Home", "Home")"><i class="fa fa-home"></i> Trang chủ</a>
+        <a href="@Url.Action("ViewIntroductionPage","Introduction")">Giới thiệu</a>
+        <a href="@Url.Action("ViewProductPage","Product")">Sản phẩm</a>
+        <a href="@Url.Action("ViewServicePage", "Service")">Dịch vụ</a>
+        <a href="@Url.Action("ViewLibraryRegulation", "LibraryRegulations")" style="width: 157px">Nội quy thư viện</a>
+        <a href="@Url.Action("PatronAfterLoginPage", "InformationPatron")" style="width: 216px; background-color: #D8491F">Thông tin bạn đọc</a>
+        @if (Session["ID"] == null)
+        {
+            <a href="@Url.Action("Login", "Login")" id="login" class="login"><i class="fa fa-sign-in"></i> Đăng nhập</a>
+        }
+        else
+        {
+            <a href="@Url.Action("Logout", "Login")" id="login" class="login"><i class="fa fa-sign-out"></i> Đăng xuất</a>
+        }
+    </div>
+    <br>
+
+    <div class="inline">
+        <table border="1" class="personal" id="list-infor">
+            <tr>
+                <th class="personal">Trình đơn bạn đọc</th>
+            </tr>
+            <tr>
+                <td class="personal"><a href="@Url.Action("PatronAfterLoginPage", "InformationPatron")" class="book-borrowing">Thông tin bạn đọc</a></td>
+            </tr>
+            <tr>
+                <td class="personal"><a href="@Url.Action("BookBorrowingPage", "InformationPatron")" class="personal">Tài liệu đang mượn</a></td>
+            </tr>
+            <tr>
+                <td class="personal"><a href="@Url.Action("RegisterToBorrowBookPage", "InformationPatron")">Thông tin đặt mượn sách</a></td>
+            </tr>
+            <tr>
+                <td class="personal selecting">Lịch sử mượn sách</td>
+            </tr>
+        </table>
+    </div>
+    <div class="inline">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+    @if (Session["ID"] == null)
+    {
+        <div>
+            <table border="1" class="personal" id="infor">
+                <tr>
+                    <th class="personal">Thông tin bạn đọc</th>
+                </tr>
+                <tr>
+                    <td class="personal text-center">
+                        <form action="/InformationPatron/ViewHistoryPage" method="post">
+                            <p class="need-to-login">
+                                Bạn đọc cần phải đăng nhập vào hệ thống
+                            </p>
+                            <div class="row">
+                                <input type="text" class="login-username" name="username" placeholder="Mã sinh viên" />
+                            </div>
+                            <div class="row">
+                                <input type="password" class="login-password" name="password" placeholder="Mật khẩu" />
+                            </div>
+                            <br />
+                            @{
+                                if (TempData["LoginFail4"] != null)
+                                {
+                                    <p style="color: red">@TempData["LoginFail4"]</p>
+                                }
+                                if (TempData["Error"] != null)
+                                {
+                                    <p style="color: red">@TempData["Error"]</p>
+                                }
+                                if (TempData["ForgetPassword"] != null)
+                                {
+                                    <p style="color: green">@TempData["ForgetPassword"]</p>
+                                }
+                            }
+                            <div class="row">
+                                <button class="btn btn-primary">Đăng nhập</button>
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#forgetPassword">
+                                    Quên mật khẩu
+                                </button>
+                            </div>
+                        </form>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    }
+    else if (!Model.Any())
+    {
+        <div>
+            <table border="1" class="personal" id="infor">
+                <tr>
+                    <th class="personal">Lịch sử mượn sách</th>
+                </tr>
+                <tr>
+                    <td class="personal">
+                        <p style="text-align: center"><b>Chưa có lịch sử mượn sách!</b></p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div>
+            <table border="1" class="personal" id="infor">
+                <tr>
+                    <th class="personal">Lịch sử mượn sách</th>
+                </tr>
+                <tr>
+                    <td class="personal">
+                        <table style="font-size: 13px">
+                            <tr>
+                                <th class="book-borrowing" style="font-size: 13px">STT</th>
+                                <th class="book-borrowing" style="font-size: 13px">Tên sách</th>
+                                <th class="book-borrowing" style="font-size: 13px">ĐKCB</th>
+                                <th class="book-borrowing" style="font-size: 13px">Ngày mượn</th>
+                                <th class="book-borrowing" style="font-size: 13px">Ngày trả</th>
+                            </tr>
+                            @{
+                                int count = 0;
+                                foreach (var item in Model)
+                                {
+                                    count++;
+                                    <tr>
+                                        <td class="info-book">@count</td>
+                                        <td class="info-book">
+                                            <a href="@Url.Action("DetailBook", "SearchBook", new { itemID = item.ItemID })"
+                                               class="history-book-borrowing-truncate" title="@item.Title">
+                                                <b>@item.Title.Trim()</b>
+                                            </a>
+                                        </td>
+                                        <td class="info-book" style="text-align: center">@item.CopyNumber</td>
+                                        @{
+                                            string checkOutDate = item.CheckOutdate.ToString("dd/MM/yyyy");
+                                            string checkInDate = item.CheckInDate.ToString("dd/MM/yyyy");
+                                        }
+                                        <td class="info-book" style="text-align: center">@checkOutDate</td>
+                                        <td class="info-book" style="text-align: center">@checkInDate</td>
+                                    </tr>
+                                }
+                            }
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    }
+    <br>
+</div>
+<br>
+<div class="modal fade" id="forgetPassword" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <form action="/InformationPatron/ForgetPassword" method="post">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" style="font-family: Arial">Quên mật khẩu</h3>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        Nhập số thẻ và email của bạn dưới đây, hệ thống sẽ tự động gửi mật khẩu mới đến mail của bạn.<br />
+                        Ví dụ dịnh dạng email: <b>anhNTSE01234@fpt.edu.vn</b>
+                    </p>
+                    <table style="margin: auto">
+                        <tr>
+                            <td style="padding: 10px"><b>Mã sinh viên:&nbsp;&nbsp;&nbsp;</b></td>
+                            <td>
+                                <input class="login-username" type="text" name="studentCode" size="40" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px"><b>Email:&nbsp;&nbsp;&nbsp;</b></td>
+                            <td>
+                                <input class="login-username" type="text" name="email" size="40" />
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <input type="hidden" name="page" value="4" />
+                <br />
+                <p class="text-center">
+                    <button class="btn btn-primary">Xác nhận</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Đóng</button>
+                </p>
+                <br />
+            </div>
+        </form>
+    </div>
+</div>
+<!-- End body -->

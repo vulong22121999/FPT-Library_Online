@@ -1,0 +1,198 @@
+﻿
+@{
+    ViewBag.Title = "Thêm ảnh trang chủ - FPT Library";
+    Layout = "~/Views/Shared/_NoticeLayout.cshtml";
+    int count = 0;
+}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-4">
+            <h2>Thêm ảnh trang chủ</h2>
+        </div>
+    </div>
+    <br />
+    @if (TempData["InsertImageSuccess"] != null)
+    {
+        <div class="row">
+            <div class="col-sm-12 alert alert-success alert-dismissible">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                <strong>@TempData["InsertImageSuccess"]</strong>
+            </div>
+        </div>
+        <br />
+    }
+    else if (TempData["InsertImageFail"] != null)
+    {
+        <div class="row">
+            <div class="col-sm-12 alert alert-danger alert-dismissible">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                <strong>@TempData["InsertImageFail"]</strong>
+            </div>
+        </div>
+        <br />
+    }
+    <form action="/Notification/InsertHomeImage" method="post" enctype="multipart/form-data">
+        <div class="row">
+            <div class="col-sm-12">
+                <input type="file" id="imgInp" name="imgHome" accept="image/*" />
+                <br />
+                <img id="image" src="#" alt="HomeImage" width="560" height="350" />
+            </div>
+        </div>
+        <br />
+        <div class="row">
+            <div class="col-sm-1">
+                <button class="btn btn-primary">Thêm ảnh</button>
+            </div>
+            <div class="col-sm-1">
+                <button type="button" class="btn btn-primary" style="width: 87px" data-toggle="modal" data-target="#del">
+                    Xoá ảnh
+                </button>
+            </div>
+            <div class="col-sm-2" style="width: 140px">
+                <button type="button" class="btn btn-primary" onclick="window.open('@Url.Action("Home", "Home")')">
+                    Trang chủ OPAC
+                </button>
+            </div>
+            <div class="col-sm-2">
+                <button type="button" class="btn btn-primary"
+                        onclick="location.href = '@Url.Action("NotificationHome","Notification", new {page = 1})'">
+                    Quản lý bài viết
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@if (ViewBag.ImgList.Count == 0)
+{
+    <div class="modal fade" id="del" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h3 class="modal-title"><b>Thông báo</b></h3>
+                </div>
+                <div class="modal-body">
+                    <p class="text-center">Ảnh trong kho đang trống!</p>
+                    <p class="text-center">
+                        <img src="~/AllContent/images/no-img.png" alt="NoImage" />
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="modal fade" id="del" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h3 class="modal-title"><b>Chọn ảnh để xóa</b></h3>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-sm-5">
+                            <strong>Ảnh</strong>
+                        </div>
+                        <div class="col-sm-5">
+                            <strong>Ngày tạo</strong>
+                        </div>
+                        <div class="col-sm-1">
+                            <strong>Xóa</strong>
+                        </div>
+                    </div>
+                    <br />
+                    @foreach (var item in ViewBag.ImgList)
+                    {
+                        count++;
+                        <div class="row">
+                            <div class="col-sm-5">
+                                <img src="~/AllContent/home-images/@item.Name" alt="HomeImage" width="120" height="60" />
+                            </div>
+                            <div class="col-sm-5">
+                                @item.CreationTime.ToString("HH:mm:ss dd/MM/yyyy")
+                            </div>
+                            <div class="col-sm-1">
+                                <input type="checkbox" name="checkToDelete" value="@item.Name" />
+                            </div>
+                        </div>
+                        if (count < ViewBag.ImgList.Count)
+                        {
+                            <hr />
+                        }
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" onclick="deleteImg()">Xóa</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<script>
+    function readURL(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#image').attr('src', e.target.result);
+            }
+
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    $("#imgInp").change(function () {
+        readURL(this);
+    });
+
+    function deleteImg() {
+
+        var checkbox = document.getElementsByName('checkToDelete');
+        var imgList = "";
+
+
+        for (var i = 0; i < checkbox.length; i++) {
+            if (checkbox[i].checked === true) {
+                imgList += checkbox[i].value + ' ';
+            }
+        }
+
+        if (imgList === "") {
+            alert("Vui lòng chọn ảnh muốn xóa");
+            return;
+        }
+
+        var data = {
+            fileNameList: imgList
+        };
+
+        if (confirm("Xác nhận xóa những ảnh đã chọn?")) {
+            $.ajax({
+                url: "/Notification/DeleteImage",
+                type: "POST",
+                data: JSON.stringify(data),
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                success: function (message) {
+                    alert(message["Message"]);
+                    location.reload();
+                },
+                error: function (message) {
+                    alert(message);
+                }
+            });
+        }
+    }
+</script>

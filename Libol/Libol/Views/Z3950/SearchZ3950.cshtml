@@ -1,0 +1,182 @@
+﻿@{
+    ViewBag.Title = "Tìm kiếm Z3950";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<h4 style="padding-left:10px;margin-top:20px;">Tìm kiếm Z39.50</h4>
+<div class="row">
+    <div class="col-4"></div>
+    <div class="col-3">
+        <div class="form-group row">
+            <label class="control-label col-md-4 align-self-center">Tên máy chủ</label>
+            @Html.DropDownList("ServerName", ViewData["lib"] as List<SelectListItem>, new { @class = "form-control col-md-8" })
+        </div>
+    </div>
+    <div class="col-5">
+        <form action="/Z3950/Z3950Servers">
+            <input class="btn btn-info" style="font-size: 13px" type="submit" value="Quản lý cổng" />
+        </form>
+    </div>
+</div>
+
+@{
+    //The Bib-1 Attribute Set support for searching corresponding to the fields
+    string[] optionQuery =
+{
+"@attr 1=1016", "@attr 1=1", "@attr 1=2", "@attr 1=4", "@attr 1=5", "@attr 1=7", "@attr 1=8",
+"@attr 1=13", "@attr 1=14", "@attr 1=16", "@attr 1=21", "@attr 1=29", "@attr 1=31", "@attr 1=30"
+};
+    string and = "@and";
+    string or = "@or";
+    string not = "@not";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col text-center">
+            <p style="color: red; font-weight: bold">@TempData["ErrorMessage"]</p>
+        </div>
+    </div>
+</div>
+<div class="row center-block">
+    <div class="row col-12">
+        <table cellspacing="2" cellpadding="5" width="100%">
+            <tr>
+                <td style="width: 320px" colspan="2"></td>
+                <td style="width: 100px">
+                    <select class="form-control" name="ddlFieldName1" id="ddlFieldName1">
+                        <option selected="selected" value="@optionQuery[0]">Mọi trường</option>
+                        <option value="@optionQuery[1]">Tác giả</option>
+                        <option value="@optionQuery[2]">Tác giả tập thể</option>
+                        <option value="@optionQuery[3]">Nhan đề</option>
+                        <option value="@optionQuery[4]">Nhan đề tùng thư</option>
+                        <option value="@optionQuery[5]">ISBN</option>
+                        <option value="@optionQuery[6]">ISSN</option>
+                        <option value="@optionQuery[7]">Chỉ số DDC</option>
+                        <option value="@optionQuery[8]">Chỉ số UDC</option>
+                        <option value="@optionQuery[9]">Chỉ số LC</option>
+                        <option value="@optionQuery[10]">Chủ đề</option>
+                        <option value="@optionQuery[11]">Từ khoá</option>
+                        <option value="@optionQuery[12]">Năm xuất bản</option>
+                        <option value="@optionQuery[13]">Nhà xuất bản</option>
+                    </select>
+                </td>
+                <td>
+                    <input class="form-control" name="txtFieldValue1" type="text" id="txtFieldValue1" style="width: 350px" />
+                </td>
+            </tr>
+            <tr>
+                <td style="width: 240px"></td>
+                <td style="height: 27px" align="right">
+                    <select class="form-control" name="ddlOperator2" id="ddlOperator2" style="width: 90px">
+                        <option selected="selected" value="@and">AND</option>
+                        <option value="@or">OR</option>
+                        <option value="@not">NOT</option>
+                    </select>
+                </td>
+                <td>
+                    <select class="form-control" name="ddlFieldName2" id="ddlFieldName2" style="width: 150px">
+                        <option selected="selected" value="@optionQuery[0]">Mọi trường</option>
+                        <option value="@optionQuery[1]">Tác giả</option>
+                        <option value="@optionQuery[2]">Tác giả tập thể</option>
+                        <option value="@optionQuery[3]">Nhan đề</option>
+                        <option value="@optionQuery[4]">Nhan đề tùng thư</option>
+                        <option value="@optionQuery[5]">ISBN</option>
+                        <option value="@optionQuery[6]">ISSN</option>
+                        <option value="@optionQuery[7]">Chỉ số DDC</option>
+                        <option value="@optionQuery[8]">Chỉ số UDC</option>
+                        <option value="@optionQuery[9]">Chỉ số LC</option>
+                        <option value="@optionQuery[10]">Chủ đề</option>
+                        <option value="@optionQuery[11]">Từ khoá</option>
+                        <option value="@optionQuery[12]">Năm xuất bản</option>
+                        <option value="@optionQuery[13]">Nhà xuất bản</option>
+                    </select>
+                </td>
+                <td>
+                    <input class="form-control" name="txtFieldValue2" type="text" id="txtFieldValue2" style="width: 350px" />
+                </td>
+            </tr>
+            <tr>
+                <td style="width: 240px"></td>
+                <td style="height: 27px" align="right">
+                    <select class="form-control" name="ddlOperator3" id="ddlOperator3" style="width: 90px">
+                        <option selected="selected" value="@and">AND</option>
+                        <option value="@or">OR</option>
+                        <option value="@not">NOT</option>
+                    </select>
+                </td>
+                <td>
+                    <select class="form-control" name="ddlFieldName3" id="ddlFieldName3" style="width: 150px">
+                        <option selected="selected" value="@optionQuery[0]">Mọi trường</option>
+                        <option value="@optionQuery[1]">Tác giả</option>
+                        <option value="@optionQuery[2]">Tác giả tập thể</option>
+                        <option value="@optionQuery[3]">Nhan đề</option>
+                        <option value="@optionQuery[4]">Nhan đề tùng thư</option>
+                        <option value="@optionQuery[5]">ISBN</option>
+                        <option value="@optionQuery[6]">ISSN</option>
+                        <option value="@optionQuery[7]">Chỉ số DDC</option>
+                        <option value="@optionQuery[8]">Chỉ số UDC</option>
+                        <option value="@optionQuery[9]">Chỉ số LC</option>
+                        <option value="@optionQuery[10]">Chủ đề</option>
+                        <option value="@optionQuery[11]">Từ khoá</option>
+                        <option value="@optionQuery[12]">Năm xuất bản</option>
+                        <option value="@optionQuery[13]">Nhà xuất bản</option>
+                    </select>
+                </td>
+                <td>
+                    <input class="form-control" name="txtFieldValue3" type="text" id="txtFieldValue3" style="width: 350px" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col text-center">
+                <button type="submit" id="stat" class="btn btn-success">Tìm kiếm</button>
+            </div>
+        </div>
+    </div>
+</div>
+<br /><br />
+
+<div id="result"></div>
+
+<script>
+    document.getElementById("stat").onclick = function () {
+        var empObj = {
+            strServerName: $("#ServerName").val(),
+            strFielName1: $("#ddlFieldName1").val(),
+            strFielName2: $("#ddlFieldName2").val(),
+            strFielName3: $("#ddlFieldName3").val(),
+            strFielVaslue1: $("#txtFieldValue1").val(),
+            strFielVaslue2: $("#txtFieldValue2").val(),
+            strFielVaslue3: $("#txtFieldValue3").val(),
+            strOprerator2: $("#ddlOperator2").val(),
+            strOprerator3: $("#ddlOperator3").val()
+        };
+
+        if ($("#ServerName").val() == "") {
+            alert("Hãy chọn thư viện!");
+        }
+        else if ($("#txtFieldValue1").val() == "" && $("#txtFieldValue2").val() == "" && $("#txtFieldValue3").val() == "") {
+            alert("Nhập nội dung tìm kiếm");
+        }
+        else {
+            console.log(empObj);
+            $.ajax({
+                url: "DisplayZ3950",
+                data: JSON.stringify(empObj),
+                contentType: "application/json;charset=utf-8",
+                type: "POST",
+                beforeSend: function () {
+                    $("#result").html("<h4>Loading...</h4>");
+                },
+                success: function (result) {
+                    $("#result").html(result);
+                },
+                error: function (errormessage) {
+                    console.log("error");
+                }
+            });
+        }
+    };
+</script>
