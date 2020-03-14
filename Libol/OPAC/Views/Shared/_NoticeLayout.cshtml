@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+    @RenderSection("head", required: false)
+    @RenderSection("scripts", required: false)
+
+    <link href="~/AllContent/images/favicon.ico" rel="icon" type="image/x-icon" />
+    <link rel="stylesheet" href="~/Content/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+    <style>
+        body {
+            min-height: 100%;
+        }
+
+        .custom-footer {
+            padding-left: 15px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg" style="background-color: #f2f2f2">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-6">
+                    <figure>
+                        <img src="~/AllContent/images/Logo.png" alt="FPT University">
+                    </figure>
+                </div>
+                <div class="col-sm-6" style="text-align: right; position: relative; top: 20px">
+                    @if (Session["LibrarianName"] != null)
+                    {
+                        <span>Xin chào <b>@Session["LibrarianName"].ToString()!</b></span>
+                    }
+                    <br />
+                    <a href="@Url.Action("LibrarianLogout", "Login")" style="color: blue">Đăng xuất</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    @RenderBody()
+    <br />
+
+    <script src="~/Scripts/ckfinder/ckfinder.js"></script>
+    <script src="~/Scripts/ckeditor/ckeditor.js"></script>
+    @*<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>*@
+    <script src="~/Scripts/jquery-3.3.1.min.js"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    @*<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>*@
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
+</body>
+</html>

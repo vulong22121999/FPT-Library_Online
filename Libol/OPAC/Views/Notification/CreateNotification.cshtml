@@ -1,0 +1,146 @@
+﻿@model IEnumerable<OPAC.Models.SupportClass.Notice>
+
+@{
+    ViewBag.Title = "Đăng bài - FPT Library";
+    Layout = "~/Views/Shared/_NoticeLayout.cshtml";
+}
+
+<div class="container">
+    <div class="row" style="width: 100%">
+        <div class="col-sm-6">
+            <h2>Đăng thông báo - tin tức</h2>
+        </div>
+        <div class="col-sm-6 text-right" style="position: relative; top: 20px; left: 40px">
+            <button type="submit" class="btn btn-primary"
+                    onclick="location.href = '@Url.Action("NotificationHome", "Notification",
+                                                  new { page = 1 })'">
+                Quản lý bài viết
+            </button>
+        </div>
+    </div>
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <p style="text-align: center; font-weight: bold; color: red">@TempData["ErrorMessage"]</p>
+    }
+    <br/>
+    @using (Html.BeginForm())
+    {
+        <form id="form1">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>Mục</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <select class="form-control" name="TypeID" id="selectType" onchange="checkType()">
+                                @foreach (var item in ViewBag.TypeNotice)
+                                {
+                                    <option value="@item.ID">@item.TypeNotice</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <p id="errorMessage" style="color: red"></p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>Thư viện</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <select class="form-control" name="LibID" onchange="">
+                                @foreach (var item in ViewBag.Library)
+                                {
+                                    <option value="@item.ID">@item.Code</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>Tiêu đề</label>
+                        </div>
+                    </div>
+                    <div class="col-md-10">
+                        <div class="form-group">
+                            <input class="form-control" placeholder="Điền Tiêu đề" name="Title" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>Nội dung</label>
+                        </div>
+                    </div>
+                    <div class="col-md-10">
+                        <div class="form-group">
+                            <textarea class="ckeditor" name="Content"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <p id="contents"></p>
+                <br />
+                <div class="form-row text-center">
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-danger">Đăng bài</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    }
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#form1').submit(function (e) {
+            e.preventDefault();
+            var message = '@ViewBag.Success';
+            $.ajax({
+                type: "POST",
+                data: form.serialize(),
+                success: function (data) {
+                    alert({
+                        title: 'Thông Báo !',
+                        content: message
+                    });
+                }
+            });
+        });
+    });
+
+    function checkType() {
+        var type = document.getElementById("selectType").value;
+        var errorMessage = document.getElementById("errorMessage");
+
+        var data = {
+            typeId : type
+        };
+        $.ajax({
+            url: "/Notification/CheckDuplicatedType",
+            type: "POST",
+            data: JSON.stringify(data),
+            contentType: "application/json;charset=utf-8",
+            dataType: "json",
+            success: function (message) {
+                if (message["Message"] !== "") {
+                    errorMessage.innerHTML = '<b>' + message["Message"] + '</b>';
+                } else {
+                    errorMessage.innerHTML = "";
+                }
+            },
+            error: function (message) {
+                alert(message);
+            }
+        });
+    }
+</script>

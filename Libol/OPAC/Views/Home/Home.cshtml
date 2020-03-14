@@ -1,0 +1,478 @@
+﻿@using OPAC.Dao
+@model OPAC.Models.OptionModel
+
+@{
+    ViewBag.Title = "Trang chủ - Thư viện trường đại học FPT";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    TempData["Access"] = false;
+    int count = 0;
+    int countImg = 0;
+}
+
+<style>
+    table.table-counter {
+        border: 6px solid #f05122;
+    }
+
+    table.table-request-book {
+        border: 3px solid #f05122;
+    }
+
+    td.top-row {
+        vertical-align: top;
+    }
+
+    td.bottom-row {
+        vertical-align: bottom;
+    }
+
+    div.custom-position {
+        width: 270px;
+        position: relative;
+        left: 11px;
+    }
+</style>
+
+<!-- Start body -->
+<div class="container">
+    <figure>
+        <img class="pic-header" alt="Home Slide" src="~/AllContent/images/white-background.png" />
+    </figure>
+    <div class="navbar-home">
+        <a href="@Url.Action("Home", "Home")" style="background-color: #D8491F"><i class="fa fa-home"></i> Trang chủ</a>
+        <a href="@Url.Action("ViewIntroductionPage","Introduction")">Giới thiệu</a>
+        <a href="@Url.Action("ViewProductPage","Product")">Sản phẩm</a>
+        <a href="@Url.Action("ViewServicePage", "Service")">Dịch vụ</a>
+        <a href="@Url.Action("ViewLibraryRegulation", "LibraryRegulations")" style="width: 157px">Nội quy thư viện</a>
+        <a href="@Url.Action("PatronAfterLoginPage", "InformationPatron")" style="width: 216px">Thông tin bạn đọc</a>
+        @if (Session["ID"] == null)
+        {
+            <a href="@Url.Action("Login", "Login")" id="login" class="login"><i class="fa fa-sign-in"></i> Đăng nhập</a>
+        }
+        else
+        {
+            <a href="@Url.Action("Logout", "Login")" id="login" class="login"><i class="fa fa-sign-out"></i> Đăng xuất</a>
+        }
+    </div>
+    <br>
+    <!-- Start: Slider Section -->
+    <div id="myCarousel" class="carousel slide" style="float: left">
+        <ol class="carousel-indicators">
+            @foreach (var item in ViewBag.ImageHome)
+            {
+                count++;
+                if (count == 1)
+                {
+                    <li data-target="#myCarousel" data-slide-to="@(count-1)" class="active"></li>
+                }
+                else
+                {
+                    <li data-target="#myCarousel" data-slide-to="@(count-1)"></li>
+                }
+            }
+        </ol>
+        <div class="carousel-inner">
+            @foreach (var item in ViewBag.ImageHome)
+            {
+                countImg++;
+                if (countImg == 1)
+                {
+                    <figure class="item active">
+                        <img id="pic" class="img-responsive" src="~/AllContent/home-images/@item.Name" 
+                             alt="HomeImage" width="100%" height="345">
+                    </figure>
+                }
+                else
+                {
+                    <figure class="item">
+                        <img id="pic" class="img-responsive" src="~/AllContent/home-images/@item.Name" 
+                             alt="HomeImage" width="100%" height="345">
+                    </figure>
+                }
+            }
+        </div>
+    </div>
+    <!-- End: Slider Section -->
+    <div class="inline">&nbsp;&nbsp;&nbsp;&nbsp;</div>
+    <!-- Start search bar and book statistics -->
+    @{
+        string data = (string)ViewBag.EmptyKeword;
+        string message = (string)TempData["errorMessage"];
+    }
+    <div>
+        <form action="/SearchBook/GetKeySearch" method="post">
+            <table style="width: 545px; height: 115px">
+                <tr class="searching">
+                    <th class="searching">
+                        <select id="selectOption" name="selectOption">
+                            @foreach (var item in Model.Option)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                    </th>
+                    <td>
+                        @Html.TextBoxFor(model => model.SearchingText, new
+                         {
+                             @class = "form-control",
+                             style = "width: 122%; height: 55%; position: relative; left: 147px; top: 1px",
+                             placeholder = "Từ khóa tìm kiếm..."
+                         })
+                    </td>
+                    <td>
+                        <button type="submit" class="form-control" id="search-icon"><i class="fa fa-search"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    @{
+                        if (string.IsNullOrEmpty(data))
+                        {
+                            <td class="message"><div id="hide">@message</div></td>
+                        }
+                        else
+                        {
+                            <td></td>
+                        }
+                    }
+                    <td><a href="@Url.Action("AdvancedSearchBook", "SearchBook")" class="up">Tìm kiếm nâng cao</a></td>
+                </tr>
+            </table>
+        </form>
+    </div>
+    <br>
+
+    <!-- End search bar and book statistics -->
+
+    <div class="inline" style="position: relative; bottom: 50px">&nbsp;&nbsp;&nbsp;&nbsp;</div>
+    <div style="height: 195px">
+        <div class="inline most-borrowing1">
+            <table class="most-borrowing1">
+                <tr>
+                    <th class="most-borrowing">Mượn nhiều nhất</th>
+                </tr>
+                @foreach (var item in ViewBag.MostUsedBook)
+                {
+                    <tr>
+                        <td class="fornews">
+                            <a href="@Url.Action("DetailBook", "SearchBook",
+                                         new { itemID = item.ItemID })" class="news truncate" title="@item.Content">
+                                <i class="fa fa-angle-double-right" style="font-size:18px; color: black"></i>
+                                @item.Content
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </table>
+        </div>
+    </div>
+    <div>
+        <div class="inline">
+            <br><br>
+            <h2 style="color: #f05122; font-family: Arial; text-transform: none">Giới thiệu sách mới</h2>
+            <table style="width: 823px">
+                <tr>
+                    <td class="book-location">
+                        <div class="w3-bar w3-black">
+                            <button class="w3-bar-item w3-button tablink" id="book-location"
+                                    onclick="openLink(event, 'FSE-HoaLac')">
+                                FSE - Hoa Lac
+                            </button>
+                            <button class="w3-bar-item w3-button tablink" id="book-location"
+                                    onclick="openLink(event, 'FSE-Detech')">
+                                FSE Detech
+                            </button>
+                            <button class="w3-bar-item w3-button tablink" id="book-location"
+                                    onclick="openLink(event, 'FSB-Hanoi')">
+                                FSB
+                                - Ha Noi
+                            </button>
+                            <button class="w3-bar-item w3-button tablink" id="book-location"
+                                    onclick="openLink(event, 'FU-Danang')">
+                                FU
+                                - Da Nang
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <div id="FSE-HoaLac" class="w3-container thing" style="display: block">
+                <table class="newbook newbook-home">
+                    @foreach (var item in ViewBag.TopNewBookFromHoaLac)
+                    {
+                        <tr>
+                            <td class="fornews">
+                                <i class="fa fa-angle-double-right" style="font-size: 18px"></i>
+                                <a href="@Url.Action("DetailBook", "SearchBook",
+                                         new { itemID = item.ItemID})" class="news" title="@item.Content">
+                                    @item.Content
+                                </a> <img alt="new" src="~/AllContent/images/new.gif" />
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </div>
+
+            <div id="FSE-Detech" class="w3-container thing" style="display: none">
+                <table class="newbook newbook-home">
+                    @foreach (var item in ViewBag.TopNewBookFromDetect)
+                    {
+                        <tr>
+                            <td class="fornews">
+                                <i class="fa fa-angle-double-right" style="font-size: 18px"></i>
+                                <a href="@Url.Action("DetailBook", "SearchBook",
+                                         new { itemID = item.ItemID})" class="news" title="@item.Content">
+                                    @item.Content
+                                </a> <img alt="new" src="~/AllContent/images/new.gif" />
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </div>
+
+            <div id="FSB-Hanoi" class="w3-container thing" style="display: none">
+                <table class="newbook newbook-home">
+                    @foreach (var item in ViewBag.TopNewBookFromFSBHaNoi)
+                    {
+                        <tr>
+                            <td class="fornews">
+                                <i class="fa fa-angle-double-right" style="font-size: 18px"></i>
+                                <a href="@Url.Action("DetailBook", "SearchBook",
+                                         new { itemID = item.ItemID})" class="news" title="@item.Content">
+                                    @item.Content
+                                </a> <img alt="new" src="~/AllContent/images/new.gif" />
+                            </td>
+                        </tr>
+                    }
+                    <tr>
+                        <td style="height: 200px"></td>
+                    </tr>
+                </table>
+            </div>
+
+            <div id="FU-Danang" class="w3-container thing" style="display: none">
+                <table class="newbook newbook-home">
+                    @foreach (var item in ViewBag.TopNewBookFromDaNang)
+                    {
+                        <tr>
+                            <td class="fornews">
+                                <i class="fa fa-angle-double-right" style="font-size: 18px"></i>
+                                <a href="@Url.Action("DetailBook", "SearchBook",
+                                         new { itemID = item.ItemID})" class="news" title="@item.Content">
+                                    @item.Content
+                                </a> <img alt="new" src="~/AllContent/images/new.gif" />
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="inline">&nbsp;&nbsp;&nbsp;&nbsp;</div>
+    <div class="inline custom-position">
+        <br><br>
+        <h2 style="color: #f05122; font-family: Arial; text-transform: none">Đề nghị sách</h2>
+        <table class="table-request-book">
+            <tr>
+                <td style="padding: 7px">
+                    Nếu bạn có yêu cầu hay đóng góp sách mới, hãy cho thư viện biết bằng cách điền thông tin
+                    <a href="https://bit.ly/2Hw8ADH" style="color: blue" target="_blank"><b>tại đây!</b></a>
+                </td>
+            </tr>
+        </table>
+        <hr/>
+        <table class="round" style="width: 270px; height: 439px">
+            <tr>
+                <th class="info">Cơ sở dữ liệu</th>
+            </tr>
+            <tr>
+                <td class="fordata">
+                    <i class="fa fa-angle-double-right" style="font-size: 18px"></i>
+                    <a href="http://ds.libol.fpt.edu.vn/" class="news" title="Cơ sở dữ liệu nội sinh Dspace: Quản lý các Đồ án tốt nghiệp của sinh viên; các bài báo khoa học của CBGV, tài nguyên môn học,..." target="_blank">
+                        Cơ sở dữ liệu nội sinh Dspace
+                    </a>
+                </td>
+            </tr>
+            <tr>
+                <td class="fordata">
+                    <i class="fa fa-angle-double-right" style="font-size: 18px"></i>
+                    <a href="http://library.books24x7.com/" class="news" title="Cơ sở dữ liệu sách trực tuyến Books24x7: Đây là CSDL trường ĐH FPT mua quyền sử dụng hàng năm từ Skillsoft Books" target="_blank">
+                        Cơ sở dữ liệu sách trực tuyến Books24x7
+                    </a>
+                </td>
+            </tr>
+            <tr>
+                <td class="fordata">
+                    <i class="fa fa-angle-double-right" style="font-size: 18px"></i>
+                    <a href="http://libgen.is/" class="news" title="Cơ sở dữ liệu mở Libgen" target="_blank">
+                        Cơ sở dữ liệu mở Libgen
+                    </a>
+                </td>
+            </tr>
+            <tr>
+                <td class="fordata">
+                    <i class="fa fa-angle-double-right" style="font-size: 18px"></i>
+                    <a href="http://repository.vnu.edu.vn/" class="news" title="Cơ sở dữ liệu mở từ Đại học Quốc gia Hà Nội" target="_blank">
+                        Cơ sở dữ liệu mở từ Đại học Quốc gia Hà Nội
+                    </a>
+                </td>
+            </tr>
+            <tr>
+                <td rowspan="9"></td>
+            </tr>
+        </table>
+    </div>
+    <div class="inline">
+        <div class="inline" style="width: 400px">
+            <table class="round">
+                <tr>
+                    <th class="info">
+                        <a href="@Url.Action("FullNotification", "Notification", new {page = 1})"
+                           style="color: white">Thông báo
+                        </a>
+                    </th>
+                </tr>
+                @foreach (var item in ViewBag.Notification)
+                {
+                    string content = HomeDao.GetLibraryCode(item.LibID) + " : " + item.Title;
+                    <tr>
+                        <td class="fornews top-row">
+                            <i class="fa fa-angle-double-right" style="font-size: 18px"></i>&nbsp;
+                            @item.CreateTime.ToString("HH:mm:ss dd/MM/yyyy") - 
+                            <a href="@Url.Action("DetailNotice","Notification", new { id = item.ID })" 
+                               class="news">@content</a>
+                        </td>
+                    </tr>
+                }
+                @if (ViewBag.Notification.Count < 4)
+                {
+                    for (int i = 0; i < 4 - ViewBag.Notification.Count; i++)
+                    {
+                        <tr>
+                            <td class="fornews top-row">
+                                &nbsp;
+                            </td>
+                        </tr>
+                    }
+                }
+                @if (ViewBag.FullNotification.Count > 4)
+                {
+                    <tr>
+                        <td class="fornews bottom-row" style="text-align: right">
+                            <a href="@Url.Action("FullNotification","Notification", new { page = 1 })"
+                               class="more">Xem thêm...</a>
+                        </td>
+                    </tr>
+                }
+            </table>
+        </div>
+        <div class="inline">&nbsp;&nbsp;&nbsp;&nbsp;</div>
+        <div class="inline" style="width: 400px; position: relative; left: 10px;">
+            <table class="round">
+                <tr>
+                    <th class="info">
+                        <a href="@Url.Action("FullNews", "Notification", new {page = 1})"
+                           style="color: white">Tin tức
+                        </a>
+                    </th>
+                </tr>
+                @foreach (var item in ViewBag.News)
+                {
+                    string content = HomeDao.GetLibraryCode(item.LibID) + " : " + item.Title;
+                    <tr>
+                        <td class="fornews top-row">
+                            <i class="fa fa-angle-double-right" style="font-size: 18px"></i>&nbsp;
+                            @item.CreateTime.ToString("HH:mm:ss dd/MM/yyyy") - 
+                            <a href="@Url.Action("DetailNotice","Notification", new { id = item.ID })"
+                               class="news">@content</a>
+                        </td>
+                    </tr>
+                }
+                @if (ViewBag.News.Count < 4)
+                {
+                    for (int i = 0; i < 4 - ViewBag.News.Count; i++)
+                    {
+                        <tr>
+                            <td class="fornews top-row">
+                                &nbsp;
+                            </td>
+                        </tr>
+                    }
+                }
+                @if (ViewBag.FullNews.Count > 4)
+                {
+                    <tr>
+                        <td class="fornews bottom-row" style="text-align: right">
+                            <a href="@Url.Action("FullNews","Notification", new { page = 1 })" 
+                               class="more">Xem thêm...</a>
+                        </td>
+                    </tr>
+                }
+            </table>
+        </div>
+        <div class="inline">&nbsp;&nbsp;&nbsp;&nbsp;</div>
+        <div class="inline" style="width: 270px; position: relative; left: 22px;">
+            <table class="table-counter">
+                <tr>
+                    <td style="padding: 7px" colspan="2">
+                        <label style="color: #f05122; font-weight: bold; font-size: 20px">Thống kê lượt truy cập</label>
+                    </td>
+                </tr>
+                <tr title="@ViewBag.Today">
+                    <td style="padding: 7px">
+                        <i class="fa fa-user" aria-hidden="true"></i> Hôm nay
+                    </td>
+                    <td style="text-align: right; padding: 7px">@ViewBag.CounterStatistics.Today</td>
+                </tr>
+                <tr title="@ViewBag.Yesterday">
+                    <td style="padding: 7px">
+                        <i class="fa fa-user" aria-hidden="true"></i> Hôm qua
+                    </td>
+                    <td style="text-align: right; padding: 7px">@ViewBag.CounterStatistics.Yesterday</td>
+                </tr>
+                <tr title="@ViewBag.ThisMonth">
+                    <td style="padding: 7px">
+                        <i class="fa fa-user" aria-hidden="true"></i> Tháng này
+                    </td>
+                    <td style="text-align: right; padding: 7px">@ViewBag.CounterStatistics.ThisMonth</td>
+                </tr>
+                <tr title="@ViewBag.LastMonth">
+                    <td style="padding: 7px">
+                        <i class="fa fa-user" aria-hidden="true"></i> Tháng trước
+                    </td>
+                    <td style="text-align: right; padding: 7px">@ViewBag.CounterStatistics.LastMonth</td>
+                </tr>
+                <tr>
+                    <td style="padding: 7px"><i class="fa fa-user" aria-hidden="true"></i> Tổng lượt truy cập</td>
+                    <td style="text-align: right; padding: 7px">@ViewBag.Total</td>
+                </tr>
+                <tr>
+                    <td colspan="2"><hr/></td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <p style="text-align: center; font-weight: bold">Địa chỉ IP của bạn: @Request.UserHostAddress</p>
+                        <p id="time" style="text-align: center; font-weight: bold"></p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+<br><br>
+<!-- End body -->
+
+<script>
+    var timeDisplay = document.getElementById("time");
+
+
+    function refreshTime() {
+        var dateString = new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
+        var formattedString = dateString.replace(", ", " - ");
+        timeDisplay.innerHTML = "Giờ hiện tại: " + formattedString;
+    }
+
+    setInterval(refreshTime, 1000);
+
+</script>

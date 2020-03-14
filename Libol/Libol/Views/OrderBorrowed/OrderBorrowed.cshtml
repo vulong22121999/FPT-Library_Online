@@ -1,0 +1,147 @@
+﻿
+@{
+                /**/
+
+                ViewBag.Title = "Danh sách đặt mượn";
+                Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Danhsachdatmuonsach</title>
+    <link rel="stylesheet" href="~/Content/bootstrap.min.css">
+    @*<link rel="stylesheet" href="assets/css/Header_Libol.css">*@
+    @*<link rel="stylesheet" href="assets/css/styles.css">*@
+    @*<link rel="stylesheet" href="assets/css/Team-Boxed.css">*@
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.1/css/bootstrap.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.5.2/css/buttons.bootstrap4.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.bootstrap4.min.css">
+    <link href="~/Content/multiselect.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery-3.3.1.min.js"></script>
+    
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <script src="~/Scripts/multiselect.min.js"></script>
+    <style>
+        label {
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body>
+    <h3 style="margin-top:20px;text-align:center;">Danh sách bạn đọc đặt mượn sách</h3>
+
+    @*<div class="row">
+        <div class="col-1">
+        </div>
+        <div class="col-2">
+            <div class="custom-control custom-checkbox ">
+                <input type="checkbox" class="custom-control-input" id="checkOrder" name="checkOrder">
+                <label class="custom-control-label" for="checkOrder">Đặt mượn</label>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="form-group row col-10 mb-lg-10">
+                <label class="control-label col-md-3 align-self-center">Từ</label>
+                <input type="date" name="DateFrom" id="DateFrom" class="form-control col-md-9" />
+            </div>
+        </div>
+        <div class="col-1">
+            <div class="custom-control custom-checkbox ">
+                <input type="checkbox" class="custom-control-input" id="titleCheck" name="titleCheck">
+                <label class="custom-control-label" for="titleCheck">Nhan đề</label>
+            </div>
+        </div>
+        <div class="col-2">
+            <div class="custom-control custom-checkbox ">
+                <input type="checkbox" class="custom-control-input" id="patronCheck" name="patronCheck">
+                <label class="custom-control-label" for="patronCheck">Số thẻ bạn đọc</label>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-1">
+        </div>
+        <div class="col-2">
+            <div class="custom-control custom-checkbox ">
+                <input type="checkbox" class="custom-control-input" id="Order_Cancel" name="Order_Cancel">
+                <label class="custom-control-label" for="Order_Cancel">Hết lượt</label>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="form-group row col-10 mb-lg-10">
+                <label class="control-label col-md-3 align-self-center">Đến</label>
+                <input type="date" name="DateTo" id="DateTo" class="form-control col-md-9" />
+            </div>
+        </div>
+        <div class="col-3">
+            <input type="text" name="searchContent" id="searchContent" class="form-control col-md-10" />
+        </div>
+        <div class="col-1">
+            <button id="stat" class="btn btn-primary mx-auto">Lọc</button>
+        </div>
+
+
+    </div>*@
+    <div class="row">
+        <div id="ContentOrderBorrowed" class="col-10 mx-auto"></div>
+    </div>
+   
+    <script>
+        $(document).ready(function () {
+            $.ajax({
+                url: "GetOrderBorrowed",
+                data: {},
+                contentType: "application/json;charset=utf-8",
+                type: "POST",
+                beforeSend: function () {
+                    $("#ContentOrderBorrowed").html("<h4>Loading...</h4>");
+                },
+                success: function (result) {
+                    $("#ContentOrderBorrowed").html(result)
+                },
+                error: function (errormessage) {
+                    console.log("error");
+                }
+            });
+        });
+        
+        document.getElementById("stat").onclick = function () {
+            var empObj = {
+                strCheckOrder: document.getElementById("checkOrder").checked,
+                strOrderCancel: document.getElementById("Order_Cancel").checked,
+                strDateFrom: document.getElementById("DateFrom").value,
+                strDateTo: document.getElementById("DateTo").value,
+                strTitleCheck: document.getElementById("titleCheck").checked,
+                strPatronCheck: document.getElementById("patronCheck").checked,
+                strSearchContent: document.getElementById("searchContent").value,
+            };
+         
+                $.ajax({
+                    url: "GetOrderBorrowedSearched",
+                    data: JSON.stringify(empObj),
+                    contentType: "application/json;charset=utf-8",
+                    type: "POST",
+                    beforeSend: function () {
+                        $("#ContentOrderBorrowed").html("<h4>Loading...</h4>");
+                    },
+                    success: function (result) {
+                        $("#ContentOrderBorrowed").html(result)
+                    },
+                    error: function (errormessage) {
+                        console.log("error");
+                    }
+                });
+            
+        };
+      
+    </script>
+
+    
+</body>
+
+

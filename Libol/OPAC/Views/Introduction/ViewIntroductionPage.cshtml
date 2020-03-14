@@ -1,0 +1,56 @@
+﻿@{
+    ViewBag.Title = "Giới thiệu - Thư viện trường đại học FPT";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    h1, h2, h3, h4, h5, h6, h7, h8 {
+        font-family: Arial;
+        color: black;
+    }
+    a {
+        color: blue;
+        text-decoration: none;
+    }
+    a:hover {
+        text-decoration: underline;
+        color: blue;
+    }
+    a.original-text {
+        text-decoration: none;
+    }
+    table {
+        margin: 0 auto;
+    }
+</style>
+
+<!-- Start body -->
+<div class="container">
+    <figure>
+        <img class="pic-header" alt="Home Slide" src="~/AllContent/images/white-background.png" />
+    </figure>
+    <div class="navbar-home">
+        <a href="@Url.Action("Home", "Home")" class="original-text"><i class="fa fa-home"></i> Trang chủ</a>
+        <a href="@Url.Action("ViewIntroductionPage","Introduction")" class="original-text"
+           style="background-color: #D8491F">Giới thiệu</a>
+        <a href="@Url.Action("ViewProductPage","Product")" class="original-text">Sản phẩm</a>
+        <a href="@Url.Action("ViewServicePage", "Service")" class="original-text">Dịch vụ</a>
+        <a href="@Url.Action("ViewLibraryRegulation", "LibraryRegulations")" class="original-text" 
+           style="width: 157px">Nội quy thư viện</a>
+        <a href="@Url.Action("PatronAfterLoginPage", "InformationPatron")" class="original-text" 
+           style="width: 216px">Thông tin bạn đọc</a>
+        @if (Session["ID"] == null)
+        {
+            <a href="@Url.Action("Login", "Login")" id="login" class="login"><i class="fa fa-sign-in"></i> Đăng nhập</a>
+        }
+        else
+        {
+            <a href="@Url.Action("Logout", "Login")" id="login" class="login"><i class="fa fa-sign-out"></i> Đăng xuất</a>
+        }
+    </div>
+    <br /><br />
+    @Html.Raw(ViewBag.Intro.Content)
+</div>
+
+<br><br>
+<!-- End body -->

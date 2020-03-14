@@ -1,0 +1,73 @@
+﻿@using Libol.SupportClass;
+
+@{
+    Layout = null;
+}
+<script>
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z - index: 1; /* Sit on top */
+            padding - top: 70px; /* Location of the box */
+            left: 0;
+            top: 0;
+            width: 100 %; /* Full width */
+            height: 100 %; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background - color: rgb(0, 0, 0); /* Fallback color */
+            background - color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+        }
+</script>
+@{
+    Catalogue catalogue = new Catalogue();
+    var i = 0;
+}
+@if (TempData["ConnectError"] != null)
+{
+    <h4>@TempData["ConnectError"]</h4>
+}
+else if (ViewBag.catalog.Count >= 1)
+{
+    <div class="row">
+        <div class="col-md-12">
+            <form action="/Z3950/SendCatalogue" method="post" target="_blank">
+                <table class="table table-bordered table-striped" style="border-collapse: collapse" , border="1">
+                    <tr>
+                        <th style="text-align:center">Nhan đề</th> 
+                        <th style="text-align:center">ISBN</th>
+                        <th style="text-align:center">Tác giả</th>
+                        <th style="text-align:center">Nhà xuất bản</th>
+                        <th style="text-align:center">Nơi xuất bản</th>
+                        <th style="text-align:center">Năm xuất bản</th>
+                        <th style="text-align:center">Biên mục</th>
+                    </tr>
+                    @foreach (var item in ViewBag.catalog)
+                    {
+                        <tr>
+                            <td>@item.NhanDeChinh</td>       
+                            <td>@item.ChiSoISBN</td>
+                            <td>@item.HoTenRieng</td>
+                            <td>@item.NhaXuatBan</td>
+                            <td>@item.NoiXuatBan</td>
+                            <td>@item.NgayThangXuatBan</td>
+                            <td style="text-align:center">
+                                @{
+                                    i++;
+                                    catalogue = (Catalogue)item;
+                                    TempData["cat" + i + ""] = (Catalogue)item;
+
+                                }
+                                <button class="btn btn-info" style="font-size: 13px" type="submit" value="@i" name="buttonID">Biên mục</button>
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </form>
+        </div>
+    </div>
+}
+else
+{
+    <h5>Không có dữ liệu</h5>
+}
+

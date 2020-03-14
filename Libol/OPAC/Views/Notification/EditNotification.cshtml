@@ -1,0 +1,121 @@
+﻿@model OPAC.Models.SupportClass.Notice
+
+@{
+    ViewBag.Title = "Sửa bài viết - FPT Library";
+    Layout = "~/Views/Shared/_NoticeLayout.cshtml";
+}
+
+<div class="container">
+    <div class="row" style="width: 100%">
+        <div class="col-sm-6">
+            <h2>Sửa bài viết</h2>
+        </div>
+        <div class="col-sm-6 text-right" style="position: relative; top: 20px; left: 40px">
+            <button type="submit" class="btn btn-primary"
+                    onclick="location.href = '@Url.Action("NotificationHome", "Notification",
+                                                  new { page = 1 })'">
+                Quản lý bài viết
+            </button>
+        </div>
+    </div>
+    @if (TempData["ErrorUpdateMessage"] != null)
+    {
+        <p style="text-align: center; font-weight: bold; color: red">@TempData["ErrorUpdateMessage"]</p>
+    }
+    <br/>
+    <form action="/Notification/EditNotification" method="post">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label>Mục</label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <select class="form-control" name="TypeID">
+                            @foreach (var item in ViewBag.TypeNotice)
+                            {
+                                if (Model.TypeID == item.ID)
+                                {
+                                    <option value="@item.ID" selected>@item.TypeNotice</option>
+                                }
+                                else
+                                {
+                                    <option value="@item.ID">@item.TypeNotice</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label>Thư viện</label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <select class="form-control" name="LibID">
+                            @foreach (var item in ViewBag.Library)
+                            {
+                                if (Model.LibID == item.ID)
+                                {
+                                    <option value="@item.ID" selected>@item.Code</option>
+                                }
+                                else
+                                {
+                                    <option value="@item.ID">@item.Code</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label>Tiêu đề</label>
+                    </div>
+                </div>
+                <div class="col-md-10">
+                    <div class="form-group">
+                        <input class="form-control" placeholder="Điền Tiêu đề" name="Title" value="@Model.Title"/>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label>Nội dung</label>
+                    </div>
+                </div>
+                <div class="col-md-10">
+                    <div class="form-group">
+                        <textarea class="ckeditor" name="Content">
+                            @Html.Raw(Model.Content)
+                        </textarea>
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" name="ID" value="@Model.ID"/>
+            <br/>
+            <div class="form-row text-center">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-success">Sửa bài viết</button>
+                            <button type="button"
+                                    onclick="location.href = '@Url.Action("NotificationHome", "Notification",
+                                                                  new {page = 1})'"
+                                    class="btn btn-danger">
+                                Về trang trước
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

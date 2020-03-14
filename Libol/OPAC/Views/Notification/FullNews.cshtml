@@ -1,0 +1,60 @@
+﻿@using OPAC.Dao
+@using PagedList.Mvc
+@model PagedList.IPagedList<OPAC.Models.NOTICE_STORE>
+
+@{
+    ViewBag.Title = "Tin tức - Trường đại học FPT";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    int count = 0;
+}
+
+<div class="container">
+    <figure>
+        <img class="pic-header" alt="Home Slide" src="~/AllContent/images/white-background.png" />
+    </figure>
+    <div class="navbar-home">
+        <a href="@Url.Action("Home", "Home")" style="background-color: #D8491F"><i class="fa fa-home"></i> Trang chủ</a>
+        <a href="@Url.Action("ViewIntroductionPage","Introduction")">Giới thiệu</a>
+        <a href="@Url.Action("ViewProductPage","Product")">Sản phẩm</a>
+        <a href="@Url.Action("ViewServicePage", "Service")">Dịch vụ</a>
+        <a href="@Url.Action("ViewLibraryRegulation", "LibraryRegulations")" style="width: 157px">Nội quy thư viện</a>
+        <a href="@Url.Action("PatronAfterLoginPage", "InformationPatron")" style="width: 216px">Thông tin bạn đọc</a>
+        @if (Session["ID"] == null)
+        {
+            <a href="@Url.Action("Login", "Login")" id="login" class="login"><i class="fa fa-sign-in"></i> Đăng nhập</a>
+        }
+        else
+        {
+            <a href="@Url.Action("Logout", "Login")" id="login" class="login"><i class="fa fa-sign-out"></i> Đăng xuất</a>
+        }
+    </div>
+    <br />
+    <div>
+        <h2 style="font-family: Arial; text-transform: none; color: black">Tin tức</h2>
+        <hr />
+        @foreach (var item in Model)
+        {
+            count++;
+            string content = HomeDao.GetLibraryCode(item.LibID) + " : " + item.Title;
+            <p>
+                <i class="fa fa-angle-double-right" style="font-size: 18px"></i>&nbsp;
+                @item.CreateTime.ToString("HH:mm:ss dd/MM/yyyy") -
+                <a href="@Url.Action("DetailNotice","Notification", new { id = item.ID })"
+                   class="news">@content</a>
+                @if (count <= 5)
+                {
+                    <img alt="new" src="~/AllContent/images/new.gif" />
+                }
+            </p>
+        }
+        <hr />
+        <div class="text-left">
+            <p><b>Trang @ViewBag.CurrentPage trong tổng số @ViewBag.TotalPage</b></p>
+            <p>
+                @Html.PagedListPager(Model, page => Url.Action("FullNews", "Notification", new { page }))
+            </p>
+        </div>
+        <div style="height: 80px"></div>
+    </div>
+</div>
+

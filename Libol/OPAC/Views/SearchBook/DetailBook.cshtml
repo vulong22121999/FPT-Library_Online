@@ -1,0 +1,739 @@
+﻿@model IEnumerable<OPAC.Models.SP_CATA_GET_CONTENTS_OF_ITEMS_Result>
+@using Microsoft.Ajax.Utilities
+@using OPAC.Models
+@using OPAC.Dao
+@using PagedList
+
+@{
+    ViewBag.Title = "Chi tiết sách - Thư viện trường đại học FPT";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .loader {
+        text-align: center;
+        border: 5px solid #d9d9d9;
+        border-radius: 50%;
+        border-top: 5px solid #f05122;
+        width: 40px;
+        height: 40px;
+        -webkit-animation: spin 1.5s linear infinite; /* Safari */
+        animation: spin 1.5s linear infinite;
+    }
+
+    /* Safari */
+    @@-webkit-keyframes spin {
+        0% {
+            -webkit-transform: rotate(0deg);
+        }
+
+        100% {
+            -webkit-transform: rotate(360deg);
+        }
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+
+<!-- Start body -->
+<div class="container">
+    <figure>
+        <img class="pic-header" alt="Home Slide" src="~/AllContent/images/white-background.png" />
+    </figure>
+    <div class="navbar-home">
+        <a href="@Url.Action("Home", "Home")" style="background-color: #D8491F"><i class="fa fa-home"></i> Trang chủ</a>
+        <a href="@Url.Action("ViewIntroductionPage","Introduction")">Giới thiệu</a>
+        <a href="@Url.Action("ViewProductPage","Product")">Sản phẩm</a>
+        <a href="@Url.Action("ViewServicePage", "Service")">Dịch vụ</a>
+        <a href="@Url.Action("ViewLibraryRegulation", "LibraryRegulations")" style="width: 157px">Nội quy thư viện</a>
+        <a href="@Url.Action("PatronAfterLoginPage", "InformationPatron")" style="width: 216px">Thông tin bạn đọc</a>
+        @if (Session["ID"] == null)
+        {
+            <a href="@Url.Action("Login", "Login")" id="login" class="login"><i class="fa fa-sign-in"></i> Đăng nhập</a>
+        }
+        else
+        {
+            <a href="@Url.Action("Logout", "Login")" id="login" class="login"><i class="fa fa-sign-out"></i> Đăng xuất</a>
+        }
+    </div>
+    <br>
+    @{
+        OpacEntities dbContext = new OpacEntities();
+        var patron = (SP_OPAC_CHECK_PATRON_CARD_Result)Session["Info"];
+        int totalBook = (int)ViewBag.TotalBook;
+        int onholdingBook = (int)ViewBag.OnHoldingBook;
+        int freeBook = (int)ViewBag.FreeBook;
+        var fullBookInfo = (FullInforBook)ViewBag.FullBookInfo;
+        var inforCopyNumber = (List<FPT_SP_GET_CODE_AND_SYMBOL_BY_ITEMID_Result>)ViewBag.InforCopyNumber;
+        var relatedTerm = (List<FPT_SP_OPAC_GET_RELATED_TERMS_Result>)ViewBag.RelatedTerm;
+        string title = (string)ViewBag.BookTitle;
+        string summary = (string)ViewBag.Summary;
+        string recordType = (string)ViewBag.RecordType;
+        var listDetailBook = new List<FPT_SP_GET_DETAIL_BOOK_WITH_STATUS_Result>();
+        var ddc = (string)ViewBag.DDC;
+        var originalDDC = (string)ViewBag.OriginalDDC;
+        int itemID = (int)ViewBag.ItemID;
+        int previousItemID = 0;
+        int nextItemID = 0;
+        int indexItem = 0;
+        int maxItem = 0;
+        int availableBook = 0;
+    }
+    <h2 class="searching">Thông tin chi tiết sách</h2>
+    <br>
+    <div class="w3-bar w3-black">
+        <button class="w3-bar-item w3-button tablink" onclick="openLink(event, 'detail-display')">
+            Hiển thị đầy đủ
+        </button>
+        <button class="w3-bar-item w3-button tablink" onclick="openLink(event, 'MARC-display')">
+            Hiển thị MARC
+        </button>
+        @if (Convert.ToInt32(TempData.Peek("CountResultList")) != 0 && TempData.Peek("Flag") != null)
+        {
+            bool flag = (bool)TempData.Peek("Flag");
+            <form action="/SearchBook/SearchItemByIndex" method="get" onsubmit="return checkInputPagination()">
+                <div style="text-align: right">
+                    <p>
+                        @if (flag)
+                        {
+                            var list = (List<FPT_SP_OPAC_GET_SEARCHED_INFO_BOOK_Result>)TempData.Peek("FullBookList");
+                            maxItem = list.Count;
+                            int currentIndex = list.Select((t, index) => new { t, index }).First(q => q.t.ID == itemID).index;
+                            indexItem = currentIndex + 1;
+                            TempData["Index"] = indexItem;
+                            if (currentIndex != 0)
+                            {
+                                var result = list[currentIndex - 1];
+                                previousItemID = result.ID;
+                                <a href="@Url.Action("DetailBook", "SearchBook", new {itemID = list[0].ID})"
+                                   class="btn-pagedList btn-borrow1" style="color: white"><b>|<</b></a>
+                                <a href="@Url.Action("DetailBook", "SearchBook", new {itemID = previousItemID})"
+                                   class="btn-pagedList btn-borrow1" style="color: white"><b><</b></a>
+                            }
+                        }
+                        else
+                        {
+                            var list = (List<FPT_SP_OPAC_GET_SEARCHED_INFO_BOOK_BY_KEYWORD_Result>)TempData.Peek("FullBookListByKeyword");
+                            maxItem = list.Count;
+                            var currentIndex = list.Select((t, index) => new { t, index }).First(q => q.t.ID == itemID).index;
+                            indexItem = currentIndex + 1;
+                            TempData["Index"] = indexItem;
+                            if (currentIndex != 0)
+                            {
+                                var result = list[currentIndex - 1];
+                                previousItemID = result.ID;
+                                <a href="@Url.Action("DetailBook", "SearchBook", new {itemID = list[0].ID})"
+                                   class="btn-pagedList btn-borrow1" style="color: white"><b>|<</b></a>
+                                <a href="@Url.Action("DetailBook", "SearchBook", new {itemID = previousItemID})"
+                                   class="btn-pagedList btn-borrow1" style="color: white"><b><</b></a>
+                            }
+                        }
+                        Kết quả
+                        @if (ViewBag.CurrentIndex == null)
+                        {
+                            <input type="text" name="index" value="@indexItem" size="7" style="text-align: center; border: 2px solid gray"
+                                   autocomplete="off" id="pagination" />
+                        }
+                        else
+                        {
+                            <input type="text" name="index" value="@Convert.ToInt32(ViewBag.CurrentIndex)" size="7"
+                                   style="text-align: center; border: 2px solid gray" autocomplete="off" />
+                        }
+                        trên tổng số <b>@Convert.ToInt32(TempData.Peek("CountResultList"))</b>
+                        @if (flag)
+                        {
+                            var list = (List<FPT_SP_OPAC_GET_SEARCHED_INFO_BOOK_Result>)TempData.Peek("FullBookList");
+                            int currentIndex = list.Select((t, index) => new { t, index }).First(q => q.t.ID == itemID).index;
+                            if (currentIndex < (list.Count - 1))
+                            {
+                                var result = list[currentIndex + 1];
+                                nextItemID = result.ID;
+                                <a href="@Url.Action("DetailBook", "SearchBook", new {itemID = nextItemID})"
+                                   class="btn-pagedList btn-borrow1" style="color: white"><b>></b></a>
+                                <a href="@Url.Action("DetailBook", "SearchBook", new {itemID = list[list.Count - 1].ID})"
+                                   class="btn-pagedList btn-borrow1" style="color: white"><b>>|</b></a>
+                            }
+                        }
+                        else
+                        {
+                            var list = (List<FPT_SP_OPAC_GET_SEARCHED_INFO_BOOK_BY_KEYWORD_Result>)TempData.Peek("FullBookListByKeyword");
+                            var currentIndex = list.Select((t, index) => new { t, index }).First(q => q.t.ID == itemID).index;
+                            if (currentIndex < (list.Count - 1))
+                            {
+                                var result = list[currentIndex + 1];
+                                nextItemID = result.ID;
+                                <a href="@Url.Action("DetailBook", "SearchBook", new {itemID = nextItemID})"
+                                   class="btn-pagedList btn-borrow1" style="color: white"><b>></b></a>
+                                <a href="@Url.Action("DetailBook", "SearchBook", new {itemID = list[list.Count - 1].ID})"
+                                   class="btn-pagedList btn-borrow1" style="color: white"><b>>|</b></a>
+                            }
+                        }
+                    </p>
+                </div>
+            </form>
+        }
+        <input type="hidden" id="maximumItem" value="@maxItem" />
+    </div>
+    <br>
+    <div class="display-detail">
+        <div id="detail-display" class="w3-container thing" style="display: block">
+            <table>
+                <tr>
+                    <th>
+                        <Label style="font-size: 26px; padding-left: 5px;" class="search-data">
+                            <b>Dữ liệu biên mục</b>
+                        </Label>
+                    </th>
+                </tr>
+            </table>
+            <table style="width: 900px">
+                <tr>
+                    <td class="detail"><b>Thông tin nhan đề</b></td>
+                    <td><b>@title</b></td>
+                </tr>
+                @if (!string.IsNullOrEmpty(summary))
+                {
+                    <tr>
+                        <td class="detail"><b>Tóm tắt</b></td>
+                        <td>@summary</td>
+                    </tr>
+                }
+                <tr>
+                    <td class="detail"><b>Loại tài liệu</b></td>
+                    <td>@recordType</td>
+                </tr>
+                @if (!string.IsNullOrEmpty(fullBookInfo.ISBN))
+                {
+                    <tr>
+                        <td class="detail"><b>Chỉ số ISBN</b></td>
+                        <td>@fullBookInfo.ISBN</td>
+                    </tr>
+                }
+                @if (!string.IsNullOrEmpty(fullBookInfo.LanguageCode))
+                {
+                    <tr>
+                        <td class="detail"><b>Mã ngôn ngữ</b></td>
+                        <td>@fullBookInfo.LanguageCode</td>
+                    </tr>
+                }
+                @if (!string.IsNullOrEmpty(ddc))
+                {
+                    <tr>
+                        <td class="detail"><b>Phân loại thập phân Dewey</b></td>
+                        <td><a href="@Url.Action("SearchBy", "SearchBook", new {keyWord = originalDDC, searchBy = 2})" style="font-weight: bold; color: blue">@ddc</a></td>
+                    </tr>
+                }
+                @{
+                    var authorList = relatedTerm.Where(s => s.TermType.Equals("Author"));
+                    string mainAuthor = "";
+                    string relatedAuthor = "";
+                    int count = 0;
+                    foreach (var item in authorList)
+                    {
+                        count++;
+                        if (count == 1)
+                        {
+                            mainAuthor = item.DisplayEntry;
+                        }
+                        else
+                        {
+                            relatedAuthor += item.DisplayEntry + ", ";
+                        }
+                    }
+                    relatedAuthor = relatedAuthor.TrimEnd(',', ' ');
+                }
+                <tr>
+                    <td class="detail"><b>Tên tác giả</b></td>
+                    <td>@mainAuthor</td>
+                </tr>
+                @if (!relatedAuthor.Equals(""))
+                {
+                    <tr>
+                        <td class="detail"><b>Tác giả liên quan</b></td>
+                        <td>@relatedAuthor</td>
+                    </tr>
+                }
+                <tr>
+                    <td class="detail"><b>Xuẩt bản</b></td>
+                    <td>@fullBookInfo.Publishing</td>
+                </tr>
+                @if (!string.IsNullOrEmpty(fullBookInfo.PublishingYear))
+                {
+                    <tr>
+                        <td class="detail"><b>Năm phát hành</b></td>
+                        <td>@fullBookInfo.PublishingYear</td>
+                    </tr>
+                }
+                <tr>
+                    <td class="detail"><b>Mô tả vật lý</b></td>
+                    <td>@fullBookInfo.PhysicDescription</td>
+                </tr>
+                @{
+                    var keywordList = relatedTerm.Where(s => s.TermType.Equals("KeyWord"));
+                    string keyWord = "";
+                    int keywordNo = 0;
+
+                    if (keywordList.Count() != 0)
+                    {
+                        <tr>
+                            <td class="detail"><b>Từ khóa</b></td>
+                            <td>
+                                @foreach (var item in keywordList)
+                                {
+                                    keywordNo++;
+                                    keyWord = keywordNo + ". " + item.DisplayEntry;
+                                    <a href="@Url.Action("SearchBy", "SearchBook", new {keyWord = item.DisplayEntry, searchBy = 1})" style="font-weight: bold; color: blue">
+                                        @keyWord &nbsp;
+                                    </a>
+                                }
+
+                            </td>
+                        </tr>
+                    }
+                }
+            </table>
+            <hr style="height: 3px; width: 900px">
+            <table>
+                <tr>
+                    <th>
+                        <Label style="font-size: 26px; padding-left: 5px;" class="search-data">
+                            <b>Thông tin đăng ký cá biệt</b>
+                        </Label>
+                    </th>
+                </tr>
+            </table>
+            <table style="width: 900px">
+                @foreach (var item in inforCopyNumber)
+                {
+                    var totalCopyNumber = SearchDao.CountTotalCopyNumberBySymbol(item.ItemID, item.Symbol);
+                    var copyNumberFree = SearchDao.CountTotalCopyNumberFreeBySymbol(item.ItemID, item.Symbol);
+                    var copyNumberNotFree = totalCopyNumber - copyNumberFree;
+                    listDetailBook.AddRange(SearchDao.GetDetailBookWithStatus(item.ItemID, item.Code));
+                    if (item.Code.Equals("FSE-HL"))
+                    {
+                        availableBook = copyNumberFree;
+                    }
+                    <tr>
+                        <td class="detail">
+                            <b>
+                                <i class="fa fa-circle" aria-hidden="true" style="color: green">
+                                </i> @item.Code: @item.Symbol
+                            </b> Tổng: <span><b>@totalCopyNumber</b></span>
+                            Rỗi: <span><b style="color: green"> @copyNumberFree</b></span>
+                            Bận: <span><b style="color: red">@copyNumberNotFree</b></span>
+
+                        </td>
+
+                    </tr>
+                }
+                <tr>
+                    <td class="detail">
+                        Tổng số bản: <b>@totalBook</b>&nbsp;&nbsp;
+                        @if (totalBook != 0)
+                        {
+                            <i class="fa fa-hand-o-right" aria-hidden="true"></i>
+                            <span>&nbsp;<a href="#detail-modal" data-toggle="modal" data-dismiss="modal" style="color: blue; font-weight: bold">Chi tiết</a></span>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td class="detail">Số bản rỗi: <b style="color: green">@freeBook</b></td>
+                </tr>
+                <tr>
+                    <td class="detail">
+                        Số bản được giữ chỗ: <b>@onholdingBook</b>&nbsp;&nbsp;
+                        @if (Session["ID"] == null)
+                        {
+                            <a data-toggle="modal" data-dismiss="modal" href="#confirm2" style="color: blue"><b>Đặt mượn sách</b></a>
+                        }
+                        else if (Session["ID"] != null && patron.isLocked != 0)
+                        {
+                            <b style="font-family: Arial; color: red">Thẻ của bạn đã bị khóa, bạn không thể đặt mượn sách!</b>
+                        }
+                        else if (Session["OnHolding"] != null && PatronDao.IsExistedItemId(itemID, Session["OnHolding"].ToString()))
+                        {
+                            <a data-toggle="modal" data-dismiss="modal" href="#confirm3" style="color: blue"><b>Đặt mượn sách</b></a>
+                        }
+                        else if (!SearchDao.IsBookInFptHoaLacLibrary(itemID))
+                        {
+                            <a data-toggle="modal" data-dismiss="modal" href="#confirm5" style="color: blue"><b>Đặt mượn sách</b></a>
+                        }
+                        else if (totalBook != 0)
+                        {
+                            <a data-toggle="modal" data-dismiss="modal" href="#myModal" style="color: blue"><b>Đặt mượn sách</b></a>
+                        }
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div id="MARC-display" class="w3-container thing" style="display: none">
+            <table>
+                <tr>
+                    <th>
+                        <Label style="font-size: 26px; padding-left: 5px;" class="search-data">
+                            <b>Dữ liệu biên mục</b>
+                        </Label>
+                    </th>
+                </tr>
+            </table>
+            <table style="width: 0px">
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="marc1">@item.FieldCode</td>
+                        <td class="marc2">@item.Ind</td>
+                        <td class="marc3">@item.Content</td>
+                    </tr>
+                }
+            </table>
+            <hr style="height: 3px; width: 900px">
+            <table>
+                <tr>
+                    <th>
+                        <Label style="font-size: 26px; padding-left: 5px;" class="search-data">
+                            <b>Thông tin đăng ký cá biệt</b>
+                        </Label>
+                    </th>
+                </tr>
+            </table>
+            <table style="width: 900px">
+                @foreach (var item in inforCopyNumber)
+                {
+                    var totalCopyNumber = SearchDao.CountTotalCopyNumberBySymbol(item.ItemID, item.Symbol);
+                    var copyNumberFree = SearchDao.CountTotalCopyNumberFreeBySymbol(item.ItemID, item.Symbol);
+                    var copyNumberNotFree = totalCopyNumber - copyNumberFree;
+
+                    <tr>
+                        <td class="detail">
+                            <b>
+                                <i class="fa fa-circle" aria-hidden="true" style="color: green">
+                                </i> @item.Code: @item.Symbol
+                            </b> Tổng: <span><b>@totalCopyNumber</b></span>
+                            Rỗi: <span><b style="color: green"> @copyNumberFree</b></span>
+                            Bận: <span><b style="color: red">@copyNumberNotFree</b></span>
+                        </td>
+                    </tr>
+                }
+                <tr>
+                    <td class="detail">
+                        Tổng số bản: <b>@totalBook</b>&nbsp;&nbsp;
+                        @if (totalBook != 0)
+                        {
+                            <i class="fa fa-hand-o-right" aria-hidden="true"></i>
+                            <span>&nbsp;<a href="#detail-modal" data-toggle="modal" data-dismiss="modal" style="color: blue; font-weight: bold">Chi tiết</a></span>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td class="detail">Số bản rỗi: <b style="color: green">@freeBook</b></td>
+                </tr>
+                <tr>
+                    <td class="detail">
+                        Số bản được giữ chỗ: <b>@onholdingBook</b>&nbsp;&nbsp;
+                        @if (Session["ID"] == null)
+                        {
+                            <a data-toggle="modal" data-dismiss="modal" href="#confirm2" style="color: blue"><b>Đặt mượn sách</b></a>
+                        }
+                        else if (Session["ID"] != null && patron.isLocked != 0)
+                        {
+                            <b style="font-family: Arial; color: red">Thẻ của bạn đã bị khóa, bạn không thể đặt mượn sách!</b>
+                        }
+                        else if (Session["OnHolding"] != null && PatronDao.IsExistedItemId(itemID, Session["OnHolding"].ToString()))
+                        {
+                            <a data-toggle="modal" data-dismiss="modal" href="#confirm3" style="color: blue"><b>Đặt mượn sách</b></a>
+                        }
+                        else if (!SearchDao.IsBookInFptHoaLacLibrary(itemID))
+                        {
+                            <a data-toggle="modal" data-dismiss="modal" href="#confirm5" style="color: blue"><b>Đặt mượn sách</b></a>
+                        }
+                        else if (totalBook != 0)
+                        {
+                            <a data-toggle="modal" data-dismiss="modal" href="#myModal" style="color: blue"><b>Đặt mượn sách</b></a>
+                        }
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <br>
+    </div>
+    <hr>
+    <div>
+        <a href="javascript:window.history.back()" class="back"><b><i class='fa fa-arrow-left'></i> Quay về trang trước</b></a>
+    </div>
+    <br>
+</div>
+<br>
+<!-- End body -->
+<!-- Confirm borrowing book popup-->
+<div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        @if (availableBook - onholdingBook > 0 && Session["OnHolding"] != null && Session["ID"] != null)
+        {
+            <form action="/SearchBook/RegisterToBorrowBook" method="post">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title" style="font-family: Arial; color: black">Xác nhận đặt mượn sách</h2>
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            Bạn có muốn mượn sách <b>@title</b> ?
+                        </p>
+                    </div>
+                    <br />
+                    <p style="text-align: center; position: relative; top: 28px">
+                        @if (dbContext.SP_OPAC_GET_ONHOLDING(Session["OnHolding"].ToString()).Any(t => t.ItemID == itemID))
+                        {
+                            <a data-toggle="modal" data-dismiss="modal" href="#confirm4" class="btn1 btn-borrow1" style="color: white">Đồng ý</a>
+                        }
+                        else
+                        {
+                            <input type="hidden" name="type" value="1" />
+                            <input type="hidden" name="userID" value="@Convert.ToInt32(Session["ID"])" />
+                            <input type="hidden" name="itemID" value="@Convert.ToInt32(TempData["itemID"])" />
+                            <button type="submit" class="btn1 btn-borrow1">Đồng ý</button>
+                        }
+                        <button type="button" class="btn1 btn-borrow1" data-dismiss="modal">Đóng</button>
+                    </p>
+                    <br />
+                </div>
+            </form>
+        }
+        else if (Session["OnHolding"] != null && Session["ID"] != null)
+        {
+            <form action="/SearchBook/RegisterToBorrowBook" method="post">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title" style="font-family: Arial; color: black">Xác nhận đặt mượn sách</h2>
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            <b>@title</b>
+                            <br /><br />
+                            Sách này trong kho thư viện FU Hòa Lạc không còn hoặc đã được đặt mượn hết. Bạn sẽ được thư viện thông báo
+                            khi có sách mới qua mail. Bạn có muốn đặt mượn sách ?
+                        </p>
+                    </div>
+                    <br />
+                    <p style="text-align: center; position: relative; top: 28px">
+                        @if (dbContext.SP_OPAC_GET_ONHOLDING(Session["OnHolding"].ToString()).Any(t => t.ItemID == itemID))
+                        {
+                            <a data-toggle="modal" data-dismiss="modal" href="#confirm4" class="btn1 btn-borrow1" style="color: white">Đồng ý</a>
+                        }
+                        else
+                        {
+                            <input type="hidden" name="type" value="2" />
+                            <input type="hidden" name="userID" value="@Convert.ToInt32(Session["ID"])" />
+                            <input type="hidden" name="itemID" value="@Convert.ToInt32(TempData["itemID"])" />
+                            <button type="submit" class="btn1 btn-borrow1">Đồng ý</button>
+                        }
+                        <button type="button" class="btn1 btn-borrow1" data-dismiss="modal">Đóng</button>
+                    </p>
+                    <br />
+                </div>
+            </form>
+        }
+    </div>
+</div>
+
+<div id="confirm2" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h2 class="modal-title" style="font-family: Arial; color: black">Đăng nhập</h2>
+            </div>
+            <div class="form-horizontal">
+                <div class="modal-body">
+                    <p style="font-family: Arial; text-align: center; font-size: 20px">
+                        Bạn đọc cần phải đăng nhập để đặt mượn sách!
+                    </p>
+                    <div class="form-group">
+                        <div class="col-md-6 col-xs-offset-3">
+                            <input name="username" id="username" class="form-control" style="height: 40px" placeholder="Tên đăng nhập">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-6 col-xs-offset-3">
+                            <input type="password" id="password" name="password" class="form-control" style="height: 40px" 
+                                   placeholder="Mật khẩu">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-xs-6 col-xs-offset-3">
+                            <div id="loading"></div>
+                        </div>
+                    </div>
+                    <p id="errorMessage" class="text-center" style="color: red"></p>
+                    <div class="form-group">
+                        <div class="col-xs-6 col-xs-offset-3 text-center">
+                            <input type="hidden" id="itemID" name="itemID" value="@itemID">
+                            <button type="submit" class="btn1 btn-borrow1" onclick="login()">Đăng nhập</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="confirm3" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" style="font-family: Arial; color: black">Thông báo</h2>
+            </div>
+            <div class="modal-body">
+                <p style="font-family: Arial; color: red; text-align: center; font-size: 24px">
+                    Bạn đã đặt mượn quyển sách này rồi!
+                </p>
+                <p style="text-align: center; color: blue">
+                    <a href="@Url.Action("RegisterToBorrowBookPage", "InformationPatron")"><b>Danh sách quyển sách được đặt mượn</b></a>
+                </p>
+            </div>
+            <br />
+            <p style="text-align: center">
+                <button type="button" class="btn1 btn-borrow1" data-dismiss="modal">Đóng</button>
+            </p>
+            <br />
+        </div>
+    </div>
+</div>
+
+<div id="confirm4" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" style="font-family: Arial; color: black">Thông báo</h2>
+            </div>
+            <div class="modal-body">
+                <p style="font-family: Arial; color: red; text-align: center; font-size: 24px">
+                    Bạn đang mượn quyển sách này!
+                </p>
+            </div>
+            <br />
+            <p style="text-align: center">
+                <button type="button" class="btn1 btn-borrow1" data-dismiss="modal">Đóng</button>
+            </p>
+            <br />
+        </div>
+    </div>
+</div>
+
+<div id="confirm5" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" style="font-family: Arial; color: black">Thông báo</h2>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Quyển sách này chưa có hoặc không tồn tại trong thư viện của bạn!
+                </p>
+            </div>
+            <br />
+            <p style="text-align: center">
+                <button type="button" class="btn1 btn-borrow1" data-dismiss="modal">Đóng</button>
+            </p>
+            <br />
+        </div>
+    </div>
+</div>
+
+<!-- Show detail copy number -->
+<div id="detail-modal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="font-family: Arial">Chi tiết tình trạng sách</h3>
+                <a href="#" data-dismiss="modal" title="Đóng" class="modal-close">&times;</a>
+            </div>
+            <div class="modal-body">
+                <table style="width: 100%">
+                    <thead>
+                        <tr>
+                            <th style="padding: 7px">Thư viện</th>
+                            <th style="padding: 7px">Kho</th>
+                            <th style="padding: 7px">ĐKCB</th>
+                            <th style="padding: 7px">Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in listDetailBook)
+                        {
+                            <tr>
+                                <td style="padding: 7px">@item.Code</td>
+                                <td style="padding: 7px">@item.Symbol</td>
+                                <td style="padding: 7px">@item.CopyNumber</td>
+                                @if (item.InUsed)
+                                {
+                                    <td style="padding: 7px; color: red; font-weight: bold">Đang cho mượn</td>
+                                }
+                                else
+                                {
+                                    <td style="padding: 7px; color: green; font-weight: bold">Đang sẵn sàng</td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <p style="text-align: center">
+                <button type="button" class="btn1 btn-borrow1" data-dismiss="modal">Đóng</button>
+            </p>
+        </div>
+    </div>
+</div>
+<script>
+    function login() {
+        var username = document.getElementById("username").value;
+        var password = document.getElementById("password").value;
+        var itemId = document.getElementById("itemID").value;
+        var loading = document.getElementById("loading");
+        var errorMessage = document.getElementById("errorMessage");
+
+        var data = {
+            username: username,
+            password: password,
+            itemId: itemId
+        };
+        $.ajax({
+            url: "/Login/LoginForDetailSearch",
+            type: "POST",
+            data: JSON.stringify(data),
+            contentType: "application/json;charset=utf-8",
+            dataType: "json",
+            success: function (message) {
+                if (message["Message"] === "Success") {
+                    loading.innerHTML = '<div class="loader"></div>';
+                    location.href = '/Detail?itemID=' + itemId;
+                } else {
+                    errorMessage.innerHTML = '<b>' + message["Message"] + '</b>';
+                    document.getElementById("username").value = "";
+                    document.getElementById("password").value = "";
+                }
+            },
+            error: function (message) {
+                alert(message);
+            }
+        });
+    }
+</script>
+<script src="~/AllContent/js/bootstrap.min.js"></script>
+<script src="~/AllContent/js/jquery-1.12.4.min.js"></script>
+<script src="~/AllContent/js/moment.js"></script>
+<script src="~/AllContent/js/moment-with-locales.js"></script>
